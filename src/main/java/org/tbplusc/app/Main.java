@@ -1,5 +1,13 @@
 package org.tbplusc.app;
 
+import discord4j.core.DiscordClient;
+import discord4j.core.event.domain.message.MessageCreateEvent;
+import org.tbplusc.app.discord_interaction.DefaultChatState;
+import org.tbplusc.app.discord_interaction.MessageHandler;
+import reactor.core.publisher.Mono;
+
+import java.util.logging.Logger;
+
 public class Main {
     public String mergeStrings(String[] args) {
         var output = new StringBuilder();
@@ -9,10 +17,19 @@ public class Main {
         return output.toString();
     }
 
+    private static final Logger logger = Logger.getLogger("Main");
+
     public static void main(String[] args) {
-        System.out.println("Hello, world!");
-        for (int i = 0; i < 10; i++) {
-            System.out.println(i);
-        }
+        final var token = System.getenv("DISCORD_TOKEN");
+        final var client = DiscordClient.create(token);
+        DefaultChatState.registerDefaultCommands();
+        final var messageHandler = new MessageHandler();
+        client.login()
+                .flatMapMany(gateway -> gateway.on(MessageCreateEvent.class))
+                .map(MessageCreateEvent::getMessage)
+                .map(message -> {
+                    messageHandler.HandleMessage(message);
+                    return Mono.empty();
+                }).blockLast();
     }
 }
