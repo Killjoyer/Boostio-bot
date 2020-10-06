@@ -5,7 +5,8 @@ import discord4j.core.object.entity.Message;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.logging.Logger;
+
+import static org.tbplusc.app.discord_interaction.DiscordUtil.getChannelForMessage;
 
 public class DefaultChatState implements ChatState {
     private final String _prefix;
@@ -16,28 +17,16 @@ public class DefaultChatState implements ChatState {
         _commands.put(name, action);
     }
 
-    private static final Logger logger = Logger.getLogger("Default chat state");
-
     public static void registerDefaultCommands() {
         registerCommand("echo", (args, message) -> {
-            final var channel = message.getChannel().block();
-            if (channel == null) {
-                logger.warning("Channel was null");
-                return new DefaultChatState();
-            }
-            if (args.equals("")) {
-                channel.createMessage("Не могу заэхоть пустую строку").block();
-            } else {
-                channel.createMessage(args).block();
-            }
+            final var channel = getChannelForMessage(message);
+            channel.createMessage(
+                    args.equals("") ? "Не могу заэхоть пустую строку" : args
+            ).block();
             return new DefaultChatState();
         });
         registerCommand("authors", (args, message) -> {
-            final var channel = message.getChannel().block();
-            if (channel == null) {
-                logger.warning("Channel was null");
-                return new DefaultChatState();
-            }
+            final var channel = getChannelForMessage(message);
             channel.createMessage("Код писали: Александ Жмышенко, Олег Белахахлий и Semen Зайдельман").block();
             return new DefaultChatState();
         });
