@@ -133,6 +133,7 @@ buildNumber.properties
 factoryConfiguration.json
 .settings
 .history
+.factorypath
 
 # End of https://www.toptal.com/developers/gitignore/api/code-java
 
