@@ -1,9 +1,8 @@
-package org.tbplusc.app.talent_helper.icyveinsparser;
+package org.tbplusc.app.talenthelper.icyveinsparser;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
-import org.tbplusc.app.util.HTTPGetter;
+import org.tbplusc.app.util.HttpGetter;
 
 public class IcyVeinsParser {
     private static final String ADDRESS_PREFIX = "https://www.icy-veins.com/heroes/";
@@ -15,9 +14,10 @@ public class IcyVeinsParser {
 
     public static IcyVeinsHeroBuilds getBuildsByHeroName(String heroName) throws IOException {
         var outputBuilds = new ArrayList<IcyVeinsBuild>();
-        var talentPage = HTTPGetter.getDocumentFromUrl(ADDRESS_PREFIX + heroName + ADDRESS_POSTFIX);
+        var talentPage = HttpGetter.getDocumentFromUrl(ADDRESS_PREFIX + heroName + ADDRESS_POSTFIX);
 
-        var buildElems = talentPage.getElementsByClass("heroes_builds").first().getElementsByClass("heroes_build");
+        var buildElems = talentPage.getElementsByClass("heroes_builds").first()
+                        .getElementsByClass("heroes_build");
         for (var build : buildElems) {
             var buildName = build.getElementsByClass("toc_no_parsing").first().text();
             var buildDesc = build.getElementsByClass("heroes_build_text").first().text();

@@ -1,12 +1,12 @@
-package org.tbplusc.app.discord_interaction;
+package org.tbplusc.app.discordinteraction;
 
 import discord4j.core.object.entity.Message;
+
+import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-
-import static org.tbplusc.app.discord_interaction.DiscordUtil.getChannelForMessage;
 
 public class DefaultChatState implements ChatState {
     private final String _prefix;

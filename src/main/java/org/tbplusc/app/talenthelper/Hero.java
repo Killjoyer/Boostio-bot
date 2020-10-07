@@ -1,10 +1,10 @@
-package org.tbplusc.app.talent_helper;
+package org.tbplusc.app.talenthelper;
 
 import java.util.List;
 
 public class Hero {
     public String name;
-    public String short_name;
+    public String shortName;
     public List<String> translations;
 
     @Override

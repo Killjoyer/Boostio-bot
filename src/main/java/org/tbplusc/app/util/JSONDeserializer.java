@@ -5,23 +5,23 @@ import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
 
-import org.tbplusc.app.talent_helper.Hero;
+import org.tbplusc.app.talenthelper.Hero;
 
 import com.google.gson.Gson;
 
-public class JSONDeserializer {
-    private JSONDeserializer() {
+public class JsonDeserializer {
+    private JsonDeserializer() {
         throw new IllegalStateException("Utility class");
     }
 
     private static Type heroArrayListType = new TypeToken<List<Hero>>() {
     }.getType();
 
-    public static <T> T deserializeJSON(String json, Type type) {
+    public static <T> T deserializeJson(String json, Type type) {
         return new Gson().fromJson(json, type);
     }
 
     public static List<Hero> deserializeHeroList(String json) {
-        return deserializeJSON(json, heroArrayListType);
+        return deserializeJson(json, heroArrayListType);
     }
 }

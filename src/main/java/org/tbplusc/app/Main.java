@@ -2,8 +2,8 @@ package org.tbplusc.app;
 
 import discord4j.core.DiscordClient;
 import discord4j.core.event.domain.message.MessageCreateEvent;
-import org.tbplusc.app.discord_interaction.DefaultChatState;
-import org.tbplusc.app.discord_interaction.MessageHandler;
+import org.tbplusc.app.discordinteraction.DefaultChatState;
+import org.tbplusc.app.discordinteraction.MessageHandler;
 import reactor.core.publisher.Mono;
 
 import java.util.logging.Logger;

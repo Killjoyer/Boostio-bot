@@ -1,4 +1,4 @@
-package org.tbplusc.app.talent_helper.icyveinsparser;
+package org.tbplusc.app.talenthelper.icyveinsparser;
 
 import java.util.ArrayList;
 import java.util.List;

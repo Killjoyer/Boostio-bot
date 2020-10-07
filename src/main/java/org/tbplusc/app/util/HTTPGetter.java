@@ -4,16 +4,14 @@ import java.io.IOException;
 
 import org.jsoup.Jsoup;
 
-public class HTTPGetter {
+public class HttpGetter {
 
-    private HTTPGetter() {
+    private HttpGetter() {
         throw new IllegalStateException("Utility class");
     }
 
     /**
-     * Returns <code>org.jsoup.nodes.Document</code> from the given URL string.
-     * 
-     * #TODO
+     * Returns <code>org.jsoup.nodes.Document</code> from the given URL string. #TODO
      * 
      * @param url The URL address with the desired document.
      * @return URL when the operation is successful; null otherwise.
