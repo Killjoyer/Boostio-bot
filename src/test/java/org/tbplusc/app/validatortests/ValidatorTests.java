@@ -1,4 +1,4 @@
-package org.tbplusc.app.validator_tests;
+package org.tbplusc.app.validatortests;
 
 import org.junit.Test;
 import org.tbplusc.app.Main;
