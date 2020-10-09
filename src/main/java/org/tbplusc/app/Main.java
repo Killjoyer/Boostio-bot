@@ -9,7 +9,7 @@ import org.tbplusc.app.discordinteraction.MessageHandler;
 import reactor.core.publisher.Mono;
 
 public class Main {
-    private final static Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
         logger.info("Application started");
@@ -21,7 +21,7 @@ public class Main {
                 .flatMapMany(gateway -> gateway.on(MessageCreateEvent.class))
                 .map(MessageCreateEvent::getMessage)
                 .map(message -> {
-                    messageHandler.HandleMessage(message);
+                    messageHandler.handleMessage(message);
                     return Mono.empty();
                 }).blockLast();
     }

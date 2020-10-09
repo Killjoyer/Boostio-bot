@@ -6,22 +6,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessageHandler {
-    final private Map<String, ChatState> states = new HashMap<>();
+    private final Map<String, ChatState> states = new HashMap<>();
 
-    public void HandleMessage(Message message) {
-        final var thread = new Thread(() -> ProcessMessage(message));
+    public void handleMessage(Message message) {
+        final var thread = new Thread(() -> processMessage(message));
         thread.start();
     }
 
-    private void ProcessMessage(Message message) {
+    private void processMessage(Message message) {
         final var authorOptional = message.getAuthor();
-        if (authorOptional.isEmpty()) throw new NullPointerException("Message had no author");
+        if (authorOptional.isEmpty()) {
+            throw new NullPointerException("Message had no author");
+        }
         final var authorId = authorOptional.get().getId();
         final var channel = message.getChannel().block();
-        if (channel == null) throw new NullPointerException("No channel for the message");
+        if (channel == null) {
+            throw new NullPointerException("No channel for the message");
+        }
         final var channelId = channel.getId();
         final var key = authorId.asString() + channelId.asString();
-        if (!states.containsKey(key)) states.put(key, new DefaultChatState());
+        if (!states.containsKey(key)) {
+            states.put(key, new DefaultChatState());
+        }
         states.put(key, states.get(key).handleMessage(message));
     }
 }
