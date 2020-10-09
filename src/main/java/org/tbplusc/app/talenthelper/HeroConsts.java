@@ -5,5 +5,5 @@ public class HeroConsts {
         throw new IllegalAccessException("Utility class");
     }
 
-    public static int[] HERO_TALENTS_LEVELS = new int[] {1, 4, 7, 10, 13, 16, 20};
+    public final static int[] HERO_TALENTS_LEVELS = new int[] {1, 4, 7, 10, 13, 16, 20};
 }
