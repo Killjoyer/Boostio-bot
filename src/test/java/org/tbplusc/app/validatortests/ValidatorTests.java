@@ -34,6 +34,11 @@ public class ValidatorTests {
         assertEquals("Chen", validator.getClosestToInput("cen"));
     }
 
+    @Test
+    public void testReturnsCorrectAnswerOnCloseInput5() {
+        assertEquals("Cho", validator.getClosestToInput("Cho"));
+    }
+
 //    @Test
 //    public void testReturnsCorrectAnswerOnCloseInput5() {
 //        assertEquals("Sgt. Hammer", validator.getClosestToInput("hammer"));
