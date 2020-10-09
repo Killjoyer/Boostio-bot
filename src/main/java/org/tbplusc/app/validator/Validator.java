@@ -28,14 +28,12 @@ public class Validator {
     }
 
     public String getClosestToInput(String userInput){
-        var loweredInput = userInput.toLowerCase();
         return Arrays.stream(charactersNames)
                 .min(getComporator(userInput))
                 .get();
     }
 
     public String[] getSomeCosestToInput(String userInput, int length){
-        var loweredInput = userInput.toLowerCase();
         return Arrays.stream(charactersNames)
                 .sorted(getComporator(userInput))
                 .limit(length)

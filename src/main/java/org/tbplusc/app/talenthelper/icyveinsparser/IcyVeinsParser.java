@@ -3,6 +3,7 @@ package org.tbplusc.app.talenthelper.icyveinsparser;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+
 import org.tbplusc.app.util.HttpGetter;
 
 public class IcyVeinsParser {
@@ -40,10 +41,7 @@ public class IcyVeinsParser {
     }
 
     public static String normalizeHeroName(String heroName) {
-        return heroName.replace(".", "")
-                        .replace(" ", "-")
-                        .replace("'", "")
-                        .toLowerCase();
+        return heroName.replace(".", "").replace(" ", "-").replace("'", "").toLowerCase();
     }
 
     private static org.jsoup.nodes.Document getDocumentFromHeroName(String heroName)
