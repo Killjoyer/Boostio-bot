@@ -39,9 +39,15 @@ public class IcyVeinsParser {
 
     }
 
+    public static String normalizeHeroName(String heroName) {
+        return heroName.replace(".", "")
+                        .replace(" ", "-")
+                        .replace("'", "")
+                        .toLowerCase();
+    }
+
     private static org.jsoup.nodes.Document getDocumentFromHeroName(String heroName)
                     throws IOException {
         return HttpGetter.getDocumentFromUrl(ADDRESS_PREFIX + heroName + ADDRESS_POSTFIX);
     }
-
 }

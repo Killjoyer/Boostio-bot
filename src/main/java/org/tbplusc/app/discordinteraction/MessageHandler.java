@@ -9,7 +9,8 @@ public class MessageHandler {
     private final Map<String, ChatState> states = new HashMap<>();
 
     public void handleMessage(Message message) {
-        final var thread = new Thread(() -> processMessage(message));
+        final var thread = new Thread(() -> processMessage(message),
+                        "Discord command processor");
         thread.start();
     }
 
