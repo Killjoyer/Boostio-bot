@@ -7,11 +7,15 @@ import java.util.Comparator;
 
 
 public class Validator {
-    private final String[] _charactersNames;
+    private final String[] charactersNames;
     private final LevenshteinDistance levenshteinComparer = new LevenshteinDistance();
 
+    private Comparator<String> getComporator(String s){
+        return Comparator.comparing(t -> levenshteinComparer.apply(t.toLowerCase(), s));
+    }
+
     public Validator(){
-        _charactersNames = new String[]{"Mei", "Deathwing", "Qhira", "Anduin", "Imperius", "Orphea", "Mal'Ganis", "Mephisto",
+        charactersNames = new String[]{"Mei", "Deathwing", "Qhira", "Anduin", "Imperius", "Orphea", "Mal'Ganis", "Mephisto",
                 "Whitemane", "Yrel", "Deckard", "Fenix", "Maiev", "Blaze", "Hanzo", "Alexstrasza", "Junkrat",
                 "Ana", "Kel'Thuzad", "Garrosh", "Stukov", "Malthael", "D.Va", "Genji", "Cassia", "Probius",
                 "Lucio", "Valeera", "Zul'jin", "Ragnaros", "Varian", "Samuro", "Zarya", "Alarak", "Auriel",
@@ -25,8 +29,16 @@ public class Validator {
 
     public String getClosestToInput(String userInput){
         var loweredInput = userInput.toLowerCase();
-        return Arrays.stream(_charactersNames)
-                .min(Comparator.comparing(t -> levenshteinComparer.apply(t.toLowerCase(), loweredInput)))
+        return Arrays.stream(charactersNames)
+                .min(getComporator(userInput))
                 .get();
+    }
+
+    public String[] getSomeCosestToInput(String userInput, int length){
+        var loweredInput = userInput.toLowerCase();
+        return Arrays.stream(charactersNames)
+                .sorted(getComporator(userInput))
+                .limit(length)
+                .toArray(String[]::new);
     }
 }
