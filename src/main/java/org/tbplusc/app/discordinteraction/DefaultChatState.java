@@ -57,12 +57,12 @@ public class DefaultChatState implements ChatState {
                     final var talents = new StringBuilder();
                     for (var i = 0; i < build.getTalents().size(); i++) {
                         talents.append(String.format(
-                                        "%d. %s \n    ",
+                                        "%3d. %s \n",
                                         HeroConsts.HERO_TALENTS_LEVELS[i],
                                         build.getTalents().get(i))
                         );
                     }
-                    return String.format("**%s**: \n    %s \n**Description:** %s",
+                    return String.format("**%s**: ```md\n%s```**Description:** %s",
                                     build.getName(), talents, build.getDescription());
                 })
                                 .forEach(build -> channel.createMessage(build).block());
