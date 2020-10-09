@@ -6,12 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MessageHandler {
-    final private Map<String, ChatState> _states = new HashMap<>();
+    final private Map<String, ChatState> states = new HashMap<>();
 
     public void HandleMessage(Message message) {
-        final var thread = new Thread(() -> {
-            ProcessMessage(message);
-        });
+        final var thread = new Thread(() -> ProcessMessage(message));
         thread.start();
     }
 
@@ -23,7 +21,7 @@ public class MessageHandler {
         if (channel == null) throw new NullPointerException("No channel for the message");
         final var channelId = channel.getId();
         final var key = authorId.asString() + channelId.asString();
-        if (!_states.containsKey(key)) _states.put(key, new DefaultChatState());
-        _states.put(key, _states.get(key).handleMessage(message));
+        if (!states.containsKey(key)) states.put(key, new DefaultChatState());
+        states.put(key, states.get(key).handleMessage(message));
     }
 }
