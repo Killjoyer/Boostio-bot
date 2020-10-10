@@ -10,6 +10,7 @@ import org.tbplusc.app.validator.Validator;
 import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -44,32 +45,8 @@ public class DefaultChatState implements ChatState {
         registerCommand("build", (args, message) -> {
             final var validator = new Validator();
             logger.info("Typed hero name: {}", args);
-            final var heroName = IcyVeinsParser
-                            .normalizeHeroName(validator.getClosestToInput(args));
-            logger.info("Normalized hero name: {}", heroName);
-            try {
-                final var builds = IcyVeinsParser.getBuildsByHeroName(heroName);
-                final var channel = getChannelForMessage(message);
-                channel.createMessage(
-                                String.format("Selected hero is **%s**", heroName)
-                ).block();
-                builds.getBuilds().stream().map((build) -> {
-                    final var talents = new StringBuilder();
-                    for (var i = 0; i < build.getTalents().size(); i++) {
-                        talents.append(String.format(
-                                        "%3d. %s \n",
-                                        HeroConsts.HERO_TALENTS_LEVELS[i],
-                                        build.getTalents().get(i))
-                        );
-                    }
-                    return String.format("**%s**: ```md\n%s```**Description:** %s",
-                                    build.getName(), talents, build.getDescription());
-                })
-                                .forEach(build -> channel.createMessage(build).block());
-            } catch (IOException e) {
-                logger.error("Hero was not loaded", e);
-            }
-            return new DefaultChatState();
+            final var possibleHeroNames = validator.getSomeCosestToInput(args, 10);
+            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message);
         });
     }
 
