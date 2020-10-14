@@ -11,7 +11,7 @@ public class Validator {
     private final LevenshteinDistance levenshteinComparer = new LevenshteinDistance();
 
     private Comparator<String> getComporator(String s) {
-        return Comparator.comparing(t -> applyComparing(t, s));
+        return Comparator.comparing(t -> applyComparing(t.toLowerCase(), s));
     }
 
     private int applyComparing(String s1, String s2) {
@@ -19,8 +19,9 @@ public class Validator {
     }
 
     public Validator(List<String> heroes) throws IllegalArgumentException {
-        if (heroes == null || heroes.isEmpty())
+        if (heroes == null || heroes.isEmpty()) {
             throw new IllegalArgumentException();
+        }
         charactersNames = heroes;
     }
 
