@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.discordinteraction.DefaultChatState;
 import org.tbplusc.app.discordinteraction.MessageHandler;
+import org.tbplusc.app.discordinteraction.WrappedDiscordMessage;
 import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
 import org.tbplusc.app.talenthelper.parsers.IcyVeinsRemoteDataProvider;
 import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
@@ -37,14 +38,14 @@ public class Main {
             return;
         }
         gateway.on(MessageCreateEvent.class).map(MessageCreateEvent::getMessage)
-                        .subscribe(messageHandler::handleMessage);
+                        .subscribe(message -> messageHandler
+                                        .handleMessage(new WrappedDiscordMessage(message)));
         gateway.on(DisconnectEvent.class).blockLast();
     }
 
     private static Validator createValidator() throws IOException {
-        final var heroes = JsonDeserializer
-                        .deserializeHeroList(org.tbplusc.app.util.HttpGetter
-                                        .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
+        final var heroes = JsonDeserializer.deserializeHeroList(org.tbplusc.app.util.HttpGetter
+                        .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
         return new Validator(Arrays.asList(heroes.stream().map((hero) -> hero.name)
                         .toArray(String[]::new)));
     }

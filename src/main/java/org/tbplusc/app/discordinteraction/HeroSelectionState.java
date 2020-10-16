@@ -18,10 +18,10 @@ public class HeroSelectionState implements ChatState {
 
     private final List<WordDistancePair> availableHeroes;
 
-    private final Message message;
+    private final WrappedMessage message;
     private final ITalentProvider talentProvider;
 
-    public HeroSelectionState(List<WordDistancePair> availableHeroes, Message message,
+    public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
                     ITalentProvider talentProvider) {
         this.availableHeroes = availableHeroes;
         this.message = message;
@@ -30,24 +30,20 @@ public class HeroSelectionState implements ChatState {
     }
 
     private void showInitMessage() {
-        final var channel = getChannelForMessage(message);
         final var heroes = new StringBuilder();
         for (var i = 0; i < availableHeroes.size(); i++) {
             heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).word));
         }
-        channel.createMessage(String.format("Choose hero (type number): \n ```md\n%s```", heroes))
-                        .block();
+        message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
     }
 
-    public static void showHeroBuildToDiscord(Message message, String heroName,
+    public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
                     ITalentProvider talentProvider) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
         logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
             final var builds = talentProvider.getBuilds(normalizedHeroName);
-            final var channel = getChannelForMessage(message);
-            channel.createMessage(String.format("Selected hero is **%s**", normalizedHeroName))
-                            .block();
+            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
             builds.getBuilds().stream().map((build) -> {
                 final var talents = new StringBuilder();
                 for (var i = 0; i < build.getTalents().size(); i++) {
@@ -56,16 +52,16 @@ public class HeroSelectionState implements ChatState {
                 }
                 return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
                                 talents, build.getDescription());
-            }).forEach(build -> channel.createMessage(build).block());
+            }).forEach(message::respond);
         } catch (IOException e) {
             logger.error("Hero was not loaded", e);
         }
     }
 
-    @Override public ChatState handleMessage(Message message) {
+    @Override public ChatState handleMessage(WrappedMessage message) {
         var number = Integer.parseInt(message.getContent());
         if (number < 1 || number >= 10) {
-            getChannelForMessage(message).createMessage("Wrong number").block();
+            message.respond("Wrong number");
             return this;
         }
         final var heroName = availableHeroes.get(number - 1).word;

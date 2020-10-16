@@ -1,6 +1,5 @@
 package org.tbplusc.app.discordinteraction;
 
-import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
@@ -18,25 +17,21 @@ public class DefaultChatState implements ChatState {
 
     private final String prefix;
 
-    private static final Map<String, BiFunction<String, Message, ChatState>> commands =
+    private static final Map<String, BiFunction<String, WrappedMessage, ChatState>> commands =
                     new HashMap<>();
 
-    public static void registerCommand(String name, BiFunction<String, Message, ChatState> action) {
+    public static void registerCommand(String name, BiFunction<String, WrappedMessage, ChatState> action) {
         commands.put(name, action);
     }
 
     public static void registerDefaultCommands(Validator validator,
                     ITalentProvider talentProvider) {
         registerCommand("echo", (args, message) -> {
-            final var channel = getChannelForMessage(message);
-            channel.createMessage(args.equals("") ? "Не могу заэхоть пустую строку" : args).block();
+            message.respond(args.equals("") ? "Не могу заэхоть пустую строку" : args);
             return new DefaultChatState();
         });
         registerCommand("authors", (args, message) -> {
-            final var channel = getChannelForMessage(message);
-            channel.createMessage(
-                            "Код писали: Александ Жмышенко, Олег Белахахлий и Semen Зайдельман")
-                            .block();
+            message.respond("Код писали: Александ Жмышенко, Олег Белахахлий и Semen Зайдельман");
             return new DefaultChatState();
         });
         registerCommand("build", (args, message) -> {
@@ -56,7 +51,7 @@ public class DefaultChatState implements ChatState {
         prefix = System.getenv("DISCORD_PREFIX");
     }
 
-    @Override public ChatState handleMessage(Message message) {
+    @Override public ChatState handleMessage(WrappedMessage message) {
         final var content = message.getContent();
         if (!content.startsWith(prefix)) {
             return this;

@@ -15,22 +15,12 @@ public class MessageHandler {
         this.threadPool = Executors.newFixedThreadPool(24);
     }
 
-    public void handleMessage(Message message) {
+    public void handleMessage(WrappedMessage message) {
         threadPool.execute(() -> processMessage(message));
     }
 
-    private void processMessage(Message message) {
-        final var authorOptional = message.getAuthor();
-        if (authorOptional.isEmpty()) {
-            throw new NullPointerException("Message had no author");
-        }
-        final var authorId = authorOptional.get().getId();
-        final var channel = message.getChannel().block();
-        if (channel == null) {
-            throw new NullPointerException("No channel for the message");
-        }
-        final var channelId = channel.getId();
-        final var key = authorId.asString() + channelId.asString();
+    private void processMessage(WrappedMessage message) {
+        final var key = message.getContextKey();
         if (!states.containsKey(key)) {
             states.put(key, new DefaultChatState());
         }
