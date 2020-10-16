@@ -42,12 +42,12 @@ public class DefaultChatState implements ChatState {
                             .block();
             return new DefaultChatState();
         });
-        registerCommand("build", (args, message) -> {
-            final var validator = new Validator();
-            logger.info("Typed hero name: {}", args);
-            final var possibleHeroNames = validator.getSomeCosestToInput(args, 10);
-            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message);
-        });
+//        registerCommand("build", (args, message) -> {
+//            final var validator = new Validator();
+//            logger.info("Typed hero name: {}", args);
+//            final var possibleHeroNames = validator.getSomeCosestToInput(args, 10);
+//            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message);
+//        });
     }
 
     public DefaultChatState() {

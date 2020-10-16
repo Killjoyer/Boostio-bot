@@ -1,13 +1,15 @@
 package org.tbplusc.app.validatortests;
 
 import org.junit.Test;
-import org.tbplusc.app.Main;
 import org.tbplusc.app.validator.Validator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
 public class ValidatorTests {
-    protected Validator validator = new Validator();
+    protected Validator validator = new Validator(new ArrayList<>(Arrays.asList("Mei", "Rexxar", "Abathur", "Chen", "Cho", "Raynor")));
 
     @Test
     public void testRetursCorrectAnswerOnCompleteInput() {
