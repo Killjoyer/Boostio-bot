@@ -7,22 +7,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.discordinteraction.DefaultChatState;
 import org.tbplusc.app.discordinteraction.MessageHandler;
+import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
+import org.tbplusc.app.talenthelper.parsers.IcyVeinsRemoteDataProvider;
+import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
+import org.tbplusc.app.util.JsonDeserializer;
 import org.tbplusc.app.validator.Validator;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final Validator validator = new Validator(getHeroList());
 
     public static void main(String[] args) {
         logger.info("Application started");
         final var token = System.getenv("DISCORD_TOKEN");
         final var client = DiscordClient.create(token);
-        DefaultChatState.registerDefaultCommands();
-        final var messageHandler = new MessageHandler();
+        final MessageHandler messageHandler;
+        try {
+            messageHandler = createMessageHandler();
+        } catch (IOException e) {
+            logger.error("Can't create message handler", e);
+            return;
+        }
+        logger.info("Message handler is ready");
         final var gateway = client.login().block();
         if (gateway == null) {
             logger.error("Can't connect to discord");
@@ -33,8 +41,20 @@ public class Main {
         gateway.on(DisconnectEvent.class).blockLast();
     }
 
-    public static List<String> getHeroList() {
-        // In future this ArrayList should be replaced with getting HeroList via http://hotsapi.net/api/v1/heroes
-        return new ArrayList<>(Arrays.asList("Hero1", "Hero2", "Hero3"));
+    private static Validator createValidator() throws IOException {
+        final var heroes = JsonDeserializer
+                        .deserializeHeroList(org.tbplusc.app.util.HttpGetter
+                                        .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
+        return new Validator(Arrays.asList(heroes.stream().map((hero) -> hero.name)
+                        .toArray(String[]::new)));
+    }
+
+    private static ITalentProvider createIcyVeinsTalentProvider() {
+        return new IcyVeinsTalentProvider(new IcyVeinsRemoteDataProvider());
+    }
+
+    private static MessageHandler createMessageHandler() throws IOException {
+        DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider());
+        return new MessageHandler();
     }
 }

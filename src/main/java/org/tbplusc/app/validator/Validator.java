@@ -32,10 +32,10 @@ public class Validator {
                 .get();
     }
 
-    public WordDistancePair[] getSomeCosestToInput(String userInput, int length) {
+    public WordDistancePair[] getSomeClosestToInput(String userInput, int length) {
         var loweredInput = userInput.toLowerCase();
         return charactersNames.stream()
-                .map(s -> new WordDistancePair(s, applyComparing(s, loweredInput)))
+                .map(s -> new WordDistancePair(s, applyComparing(s.toLowerCase(), loweredInput)))
                 .sorted(Comparator.comparingInt(s -> s.distance))
                 .limit(length)
                 .toArray(WordDistancePair[]::new);

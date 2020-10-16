@@ -36,7 +36,8 @@ public class IcyVeinsTalentProvider implements ITalentProvider {
 
     }
 
-    private String normalizeHeroName(String heroName) {
-        return heroName.replace(".", "").replace(" ", "-").replace("'", "").toLowerCase();
+    public static String normalizeHeroName(String heroName) {
+        return heroName.replace(".", "").replace(" ", "-").replace("'", "").replace("ú", "u")
+                        .toLowerCase();
     }
 }

@@ -3,13 +3,11 @@ package org.tbplusc.app.discordinteraction;
 import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tbplusc.app.talenthelper.HeroConsts;
-import org.tbplusc.app.talenthelper.icyveinsparser.IcyVeinsParser;
+import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
 import org.tbplusc.app.validator.Validator;
 
 import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,12 +25,11 @@ public class DefaultChatState implements ChatState {
         commands.put(name, action);
     }
 
-    public static void registerDefaultCommands() {
+    public static void registerDefaultCommands(Validator validator,
+                    ITalentProvider talentProvider) {
         registerCommand("echo", (args, message) -> {
             final var channel = getChannelForMessage(message);
-            channel.createMessage(
-                    args.equals("") ? "Не могу заэхоть пустую строку" : args
-            ).block();
+            channel.createMessage(args.equals("") ? "Не могу заэхоть пустую строку" : args).block();
             return new DefaultChatState();
         });
         registerCommand("authors", (args, message) -> {
@@ -42,20 +39,24 @@ public class DefaultChatState implements ChatState {
                             .block();
             return new DefaultChatState();
         });
-//        registerCommand("build", (args, message) -> {
-//            final var validator = new Validator();
-//            logger.info("Typed hero name: {}", args);
-//            final var possibleHeroNames = validator.getSomeCosestToInput(args, 10);
-//            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message);
-//        });
+        registerCommand("build", (args, message) -> {
+            logger.info("Typed hero name: {}", args);
+            final var possibleHeroNames = validator.getSomeClosestToInput(args, 10);
+            if (possibleHeroNames[0].distance == 0) {
+                HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
+                                talentProvider);
+                return new DefaultChatState();
+            }
+            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
+                            talentProvider);
+        });
     }
 
     public DefaultChatState() {
         prefix = System.getenv("DISCORD_PREFIX");
     }
 
-    @Override
-    public ChatState handleMessage(Message message) {
+    @Override public ChatState handleMessage(Message message) {
         final var content = message.getContent();
         if (!content.startsWith(prefix)) {
             return this;

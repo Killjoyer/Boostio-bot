@@ -8,9 +8,11 @@ import java.util.Map;
 public class MessageHandler {
     private final Map<String, ChatState> states = new HashMap<>();
 
+    public MessageHandler() {
+    }
+
     public void handleMessage(Message message) {
-        final var thread = new Thread(() -> processMessage(message),
-                        "Discord command processor");
+        final var thread = new Thread(() -> processMessage(message), "Discord command processor");
         thread.start();
     }
 
