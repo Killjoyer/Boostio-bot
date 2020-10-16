@@ -35,7 +35,7 @@ public class HeroSelectionState implements ChatState {
         for (var i = 0; i < availableHeroes.size(); i++) {
             heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).word));
         }
-        channel.createMessage(String.format("Choice hero (type number): \n ```md\n%s```", heroes))
+        channel.createMessage(String.format("Choose hero (type number): \n ```md\n%s```", heroes))
                         .block();
     }
 
