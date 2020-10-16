@@ -3,6 +3,7 @@ package org.tbplusc.app.discordinteraction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
+import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 
 import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
@@ -48,7 +49,7 @@ public class DefaultChatState implements ChatState {
     }
 
     public DefaultChatState() {
-        prefix = System.getenv("DISCORD_PREFIX");
+        prefix = EnvWrapper.getValue("DISCORD_PREFIX");
     }
 
     @Override public ChatState handleMessage(WrappedMessage message) {

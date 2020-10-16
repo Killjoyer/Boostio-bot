@@ -1,11 +1,11 @@
 package org.tbplusc.app.discordinteraction;
 
-import discord4j.core.object.entity.Message;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class MessageHandler {
     private final Map<String, ChatState> states = new HashMap<>();
@@ -15,8 +15,8 @@ public class MessageHandler {
         this.threadPool = Executors.newFixedThreadPool(24);
     }
 
-    public void handleMessage(WrappedMessage message) {
-        threadPool.execute(() -> processMessage(message));
+    public Future<?> handleMessage(WrappedMessage message) {
+        return threadPool.submit(() -> processMessage(message));
     }
 
     private void processMessage(WrappedMessage message) {

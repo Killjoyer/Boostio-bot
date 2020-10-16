@@ -11,6 +11,7 @@ import org.tbplusc.app.discordinteraction.WrappedDiscordMessage;
 import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
 import org.tbplusc.app.talenthelper.parsers.IcyVeinsRemoteDataProvider;
 import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
+import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.util.JsonDeserializer;
 import org.tbplusc.app.validator.Validator;
 
@@ -22,7 +23,8 @@ public class Main {
 
     public static void main(String[] args) {
         logger.info("Application started");
-        final var token = System.getenv("DISCORD_TOKEN");
+        registerEnvVariables();
+        final var token = EnvWrapper.getValue("DISCORD_TOKEN");
         final var client = DiscordClient.create(token);
         final MessageHandler messageHandler;
         try {
@@ -57,5 +59,10 @@ public class Main {
     private static MessageHandler createMessageHandler() throws IOException {
         DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider());
         return new MessageHandler();
+    }
+
+    private static void registerEnvVariables() {
+        EnvWrapper.registerValue("DISCORD_TOKEN", System.getenv("DISCORD_TOKEN"));
+        EnvWrapper.registerValue("DISCORD_PREFIX", System.getenv("DISCORD_PREFIX"));
     }
 }
