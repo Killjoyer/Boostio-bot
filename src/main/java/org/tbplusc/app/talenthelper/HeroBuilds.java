@@ -1,13 +1,13 @@
-package org.tbplusc.app.talenthelper.icyveinsparser;
+package org.tbplusc.app.talenthelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IcyVeinsHeroBuilds {
+public class HeroBuilds {
     private final String heroName;
-    private final List<IcyVeinsBuild> builds;
+    private final List<HeroBuild> builds;
 
-    public IcyVeinsHeroBuilds(String heroName, List<IcyVeinsBuild> builds) {
+    public HeroBuilds(String heroName, List<HeroBuild> builds) {
         this.heroName = heroName;
         this.builds = new ArrayList<>(builds);
     }
@@ -16,7 +16,7 @@ public class IcyVeinsHeroBuilds {
         return heroName;
     }
 
-    public List<IcyVeinsBuild> getBuilds() {
+    public List<HeroBuild> getBuilds() {
         return new ArrayList<>(builds);
     }
 
