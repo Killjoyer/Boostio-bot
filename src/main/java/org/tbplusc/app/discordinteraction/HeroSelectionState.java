@@ -1,6 +1,5 @@
 package org.tbplusc.app.discordinteraction;
 
-import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.talenthelper.HeroConsts;
@@ -11,6 +10,9 @@ import org.tbplusc.app.validator.WordDistancePair;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * ChatState to allow user to select hero from closest to his text.
+ */
 public class HeroSelectionState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(HeroSelectionState.class);
 
@@ -19,6 +21,12 @@ public class HeroSelectionState implements ChatState {
     private final WrappedMessage message;
     private final ITalentProvider talentProvider;
 
+    /**
+     * ChatState to allow user to select hero from closest to his text.
+     * @param availableHeroes heroes list provided by Validator
+     * @param message message with command from user
+     * @param talentProvider object to get talents from somewhere
+     */
     public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
                     ITalentProvider talentProvider) {
         this.availableHeroes = availableHeroes;
@@ -35,6 +43,12 @@ public class HeroSelectionState implements ChatState {
         message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
     }
 
+    /**
+     * Format selected hero build for discord and send it as message response.
+     * @param message message to respond
+     * @param heroName
+     * @param talentProvider object to get talents from somewhere
+     */
     public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
                     ITalentProvider talentProvider) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);

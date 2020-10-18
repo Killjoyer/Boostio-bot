@@ -3,6 +3,9 @@ package org.tbplusc.app.util;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Acts as middleware for system environment.
+ */
 public class EnvWrapper {
     private static final Map<String, String> registeredValues = new HashMap<>();
 

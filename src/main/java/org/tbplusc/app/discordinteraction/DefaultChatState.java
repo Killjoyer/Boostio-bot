@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+
+/**
+ * ChatState that responsible for handling commands on first step
+ */
 public class DefaultChatState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(DefaultChatState.class);
 
@@ -23,6 +27,11 @@ public class DefaultChatState implements ChatState {
         commands.put(name, action);
     }
 
+    /**
+     * Register "echo", "authors", "builds" commands.
+     * @param validator object to find closest word for "builds" command
+     * @param talentProvider object to get builds for hero
+     */
     public static void registerDefaultCommands(Validator validator,
                     ITalentProvider talentProvider) {
         registerCommand("echo", (args, message) -> {
