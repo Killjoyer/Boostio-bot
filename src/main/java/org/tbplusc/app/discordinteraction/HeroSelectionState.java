@@ -11,8 +11,6 @@ import org.tbplusc.app.validator.WordDistancePair;
 import java.io.IOException;
 import java.util.List;
 
-import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
-
 public class HeroSelectionState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(HeroSelectionState.class);
 

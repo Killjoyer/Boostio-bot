@@ -6,8 +6,6 @@ import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
 import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 
-import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
