@@ -1,45 +1,61 @@
 package org.tbplusc.app.discordinteraction;
 
-import discord4j.core.object.entity.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.talenthelper.HeroConsts;
-import org.tbplusc.app.talenthelper.icyveinsparser.IcyVeinsParser;
+import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
+import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
+import org.tbplusc.app.validator.WordDistancePair;
 
 import java.io.IOException;
 import java.util.List;
 
-import static org.tbplusc.app.discordinteraction.DiscordUtil.getChannelForMessage;
-
+/**
+ * ChatState to allow user to select hero from closest to his text.
+ */
 public class HeroSelectionState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(HeroSelectionState.class);
 
-    private final List<String> availableHeroes;
+    private final List<WordDistancePair> availableHeroes;
 
-    private final Message message;
+    private final WrappedMessage message;
+    private final ITalentProvider talentProvider;
 
-    public HeroSelectionState(List<String> availableHeroes, Message message) {
+    /**
+     * ChatState to allow user to select hero from closest to his text.
+     * @param availableHeroes heroes list provided by Validator
+     * @param message message with command from user
+     * @param talentProvider object to get talents from somewhere
+     */
+    public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
+                    ITalentProvider talentProvider) {
         this.availableHeroes = availableHeroes;
         this.message = message;
+        this.talentProvider = talentProvider;
         showInitMessage();
     }
 
-    public void showInitMessage() {
-        final var channel = getChannelForMessage(message);
+    private void showInitMessage() {
         final var heroes = new StringBuilder();
         for (var i = 0; i < availableHeroes.size(); i++) {
-            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i)));
+            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).word));
         }
-        channel.createMessage(String.format("Choice hero (type number): \n ```md\n%s```", heroes))
-                        .block();
+        message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
     }
 
-    private static void showHeroBuildToDiscord(Message message, String heroName) {
-        logger.info("Normalized hero name: {}", heroName);
+    /**
+     * Format selected hero build for discord and send it as message response.
+     * @param message message to respond
+     * @param heroName
+     * @param talentProvider object to get talents from somewhere
+     */
+    public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
+                    ITalentProvider talentProvider) {
+        final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
+        logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
-            final var builds = IcyVeinsParser.getBuildsByHeroName(heroName);
-            final var channel = getChannelForMessage(message);
-            channel.createMessage(String.format("Selected hero is **%s**", heroName)).block();
+            final var builds = talentProvider.getBuilds(normalizedHeroName);
+            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
             builds.getBuilds().stream().map((build) -> {
                 final var talents = new StringBuilder();
                 for (var i = 0; i < build.getTalents().size(); i++) {
@@ -48,20 +64,20 @@ public class HeroSelectionState implements ChatState {
                 }
                 return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
                                 talents, build.getDescription());
-            }).forEach(build -> channel.createMessage(build).block());
+            }).forEach(message::respond);
         } catch (IOException e) {
             logger.error("Hero was not loaded", e);
         }
     }
 
-    @Override public ChatState handleMessage(Message message) {
+    @Override public ChatState handleMessage(WrappedMessage message) {
         var number = Integer.parseInt(message.getContent());
-        if (number <= 1 || number >= 10) {
-            getChannelForMessage(message).createMessage("Wrong number").block();
+        if (number < 1 || number >= 10) {
+            message.respond("Wrong number");
             return this;
         }
-        final var heroName = IcyVeinsParser.normalizeHeroName(availableHeroes.get(number - 1));
-        showHeroBuildToDiscord(message, heroName);
+        final var heroName = availableHeroes.get(number - 1).word;
+        showHeroBuildToDiscord(message, heroName, talentProvider);
         return new DefaultChatState();
     }
 }
