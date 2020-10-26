@@ -1,10 +1,10 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tbplusc.app.talenthelper.HeroConsts;
-import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
-import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
+import org.tbplusc.app.talent.helper.HeroConsts;
+import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
+import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
 import org.tbplusc.app.validator.WordDistancePair;
 
 import java.io.IOException;

@@ -1,8 +1,8 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
+import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 
@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 
 
 /**
- * ChatState that responsible for handling commands on first step
+ * ChatState that responsible for handling commands on first step.
  */
 public class DefaultChatState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(DefaultChatState.class);
@@ -61,7 +61,8 @@ public class DefaultChatState implements ChatState {
 
     @Override public ChatState handleMessage(WrappedMessage message) {
         final var content = message.getContent();
-        if (!content.startsWith(prefix)) {
+        logger.info("Message content: {}", content);
+        if (!content.startsWith(prefix) || content.equals("")) {
             return this;
         }
         final var splitted = content.split(" ", 2);

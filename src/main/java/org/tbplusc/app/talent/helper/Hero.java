@@ -1,4 +1,4 @@
-package org.tbplusc.app.talenthelper;
+package org.tbplusc.app.talent.helper;
 
 import java.util.List;
 

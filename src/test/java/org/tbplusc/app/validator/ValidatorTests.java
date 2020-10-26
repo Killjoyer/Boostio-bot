@@ -1,7 +1,6 @@
-package org.tbplusc.app.validatortests;
+package org.tbplusc.app.validator;
 
 import org.junit.Test;
-import org.tbplusc.app.validator.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;

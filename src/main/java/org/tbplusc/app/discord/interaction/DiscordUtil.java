@@ -1,4 +1,4 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.discord.interaction;
 
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.channel.MessageChannel;

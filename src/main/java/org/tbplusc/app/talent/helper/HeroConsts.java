@@ -1,4 +1,4 @@
-package org.tbplusc.app.talenthelper;
+package org.tbplusc.app.talent.helper;
 
 public class HeroConsts {
     private HeroConsts() throws IllegalAccessException {

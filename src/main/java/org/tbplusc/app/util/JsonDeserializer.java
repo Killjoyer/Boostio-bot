@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
 
-import org.tbplusc.app.talenthelper.Hero;
+import org.tbplusc.app.talent.helper.Hero;
 
 import com.google.gson.Gson;
 
