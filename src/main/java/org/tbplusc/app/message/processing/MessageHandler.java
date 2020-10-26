@@ -1,4 +1,4 @@
-package org.tbplusc.app.discord.interaction;
+package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

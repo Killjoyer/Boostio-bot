@@ -1,6 +1,8 @@
 package org.tbplusc.app.discord.interaction;
 
 import discord4j.core.object.entity.Message;
+import org.tbplusc.app.message.processing.WrappedMessage;
+
 import static org.tbplusc.app.discord.interaction.DiscordUtil.getChannelForMessage;
 
 public class WrappedDiscordMessage implements WrappedMessage {

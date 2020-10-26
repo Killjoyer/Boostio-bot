@@ -1,4 +1,4 @@
-package org.tbplusc.app.discord.interaction;
+package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 
 
 /**
- * ChatState that responsible for handling commands on first step
+ * ChatState that responsible for handling commands on first step.
  */
 public class DefaultChatState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(DefaultChatState.class);
