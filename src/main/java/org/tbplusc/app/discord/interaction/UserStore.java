@@ -1,4 +1,4 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.discord.interaction;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

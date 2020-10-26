@@ -1,10 +1,10 @@
-package org.tbplusc.app.talenthelper.parsers;
+package org.tbplusc.app.talent.helper.parsers;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.tbplusc.app.talenthelper.HeroBuild;
-import org.tbplusc.app.talenthelper.HeroBuilds;
+import org.tbplusc.app.talent.helper.HeroBuild;
+import org.tbplusc.app.talent.helper.HeroBuilds;
 
 public class IcyVeinsTalentProvider implements ITalentProvider {
     private final IIcyVeinsDataProvider dataProvider;

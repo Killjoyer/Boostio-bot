@@ -1,4 +1,4 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.discord.interaction;
 
 public interface WrappedMessage {
     String getContextKey();

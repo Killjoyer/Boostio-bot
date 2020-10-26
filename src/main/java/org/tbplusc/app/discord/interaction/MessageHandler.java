@@ -1,4 +1,4 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.discord.interaction;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

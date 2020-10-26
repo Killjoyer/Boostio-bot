@@ -1,8 +1,8 @@
-package org.tbplusc.app.talenthelpertests.icyveinsparsertests;
+package org.tbplusc.app.talent.helper.parsers;
 
 import org.junit.Test;
-import org.tbplusc.app.talenthelper.parsers.IIcyVeinsDataProvider;
-import org.tbplusc.app.talenthelper.parsers.IcyVeinsTalentProvider;
+import org.tbplusc.app.talent.helper.parsers.IIcyVeinsDataProvider;
+import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
 import org.junit.Before;
 import org.mockito.Mockito;
 import static org.junit.Assert.assertArrayEquals;

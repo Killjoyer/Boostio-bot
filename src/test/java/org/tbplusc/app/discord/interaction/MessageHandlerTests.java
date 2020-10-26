@@ -1,17 +1,16 @@
-package org.tbplusc.app.discordinteraction;
+package org.tbplusc.app.discord.interaction;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.tbplusc.app.talenthelper.HeroBuild;
-import org.tbplusc.app.talenthelper.HeroBuilds;
-import org.tbplusc.app.talenthelper.parsers.ITalentProvider;
+import org.tbplusc.app.talent.helper.HeroBuild;
+import org.tbplusc.app.talent.helper.HeroBuilds;
+import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 import org.tbplusc.app.validator.WordDistancePair;
 
-import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
