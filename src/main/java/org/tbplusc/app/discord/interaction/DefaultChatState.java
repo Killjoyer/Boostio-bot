@@ -61,7 +61,8 @@ public class DefaultChatState implements ChatState {
 
     @Override public ChatState handleMessage(WrappedMessage message) {
         final var content = message.getContent();
-        if (!content.startsWith(prefix)) {
+        logger.info("Message content: {}", content);
+        if (!content.startsWith(prefix) || content.equals("")) {
             return this;
         }
         final var splitted = content.split(" ", 2);
