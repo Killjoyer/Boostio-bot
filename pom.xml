@@ -4,7 +4,7 @@
 
     <groupId>org.tbplusc</groupId>
     <artifactId>boostio-bot</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 
     <build>
         <plugins>
