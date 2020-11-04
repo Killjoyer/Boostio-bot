@@ -11,7 +11,7 @@ public class DiscordServerSettings {
     public DiscordServerSettings(String guildId, String prefix, Map<String, String> aliases) {
         this.guildId = guildId;
         this.prefix = prefix;
-        this.aliases = aliases;
+        this.aliases = new HashMap<>(aliases);
     }
 
     public String getGuildId() {
@@ -23,6 +23,6 @@ public class DiscordServerSettings {
     }
 
     public Map<String, String> getAliases() {
-        return new HashMap<String, String>(aliases);
+        return new HashMap<>(aliases);
     }
 }
