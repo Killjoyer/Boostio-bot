@@ -3,12 +3,12 @@ package org.tbplusc.app.discord.interaction;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DiscordServerSettings {
+public class DiscordSettings {
     private final String guildId;
     private final String prefix;
     private final Map<String, String> aliases;
 
-    public DiscordServerSettings(String guildId, String prefix, Map<String, String> aliases) {
+    public DiscordSettings(String guildId, String prefix, Map<String, String> aliases) {
         this.guildId = guildId;
         this.prefix = prefix;
         this.aliases = new HashMap<>(aliases);
