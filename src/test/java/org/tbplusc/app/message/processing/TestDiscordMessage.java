@@ -1,6 +1,7 @@
 package org.tbplusc.app.message.processing;
 
 import java.util.function.Consumer;
+import org.apache.commons.lang3.NotImplementedException;
 
 public class TestDiscordMessage implements WrappedMessage {
 
@@ -12,15 +13,23 @@ public class TestDiscordMessage implements WrappedMessage {
         this.content = content;
     }
 
-    @Override public String getContextKey() {
+    @Override
+    public String getConversationId() {
         return "AA";
     }
 
-    @Override public String getContent() {
+    @Override
+    public String getContent() {
         return content;
     }
 
-    @Override public void respond(String text) {
+    @Override
+    public void respond(String text) {
         callback.accept(text);
+    }
+
+    @Override
+    public String getServerId() {
+        throw new NotImplementedException();
     }
 }

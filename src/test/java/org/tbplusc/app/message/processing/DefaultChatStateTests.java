@@ -23,7 +23,7 @@ public class DefaultChatStateTests {
     @Before public void setUp() {
         validatorMock = Mockito.mock(Validator.class);
         talentHelperMock = Mockito.mock(ITalentProvider.class);
-        DefaultChatState.registerDefaultCommands(validatorMock, talentHelperMock);
+        DefaultChatState.registerDefaultCommands(validatorMock, talentHelperMock, null, null);
         EnvWrapper.registerValue("DISCORD_PREFIX", "!");
         defaultChatState = new DefaultChatState();
     }
