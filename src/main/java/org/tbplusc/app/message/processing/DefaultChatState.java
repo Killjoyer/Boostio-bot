@@ -21,7 +21,7 @@ public class DefaultChatState implements ChatState {
     private final String prefix;
 
     private static final Map<String, BiFunction<String, WrappedMessage, ChatState>> commands =
-                    new HashMap<>();
+            new HashMap<>();
 
     public static void registerCommand(String name, BiFunction<String, WrappedMessage, ChatState> action) {
         commands.put(name, action);
@@ -29,11 +29,12 @@ public class DefaultChatState implements ChatState {
 
     /**
      * Register "echo", "authors", "builds" commands.
-     * @param validator object to find closest word for "builds" command
+     *
+     * @param validator      object to find closest word for "builds" command
      * @param talentProvider object to get builds for hero
      */
     public static void registerDefaultCommands(Validator validator,
-                    ITalentProvider talentProvider) {
+                                               ITalentProvider talentProvider) {
         registerCommand("echo", (args, message) -> {
             message.respond(args.equals("") ? "Не могу заэхоть пустую строку" : args);
             return new DefaultChatState();
@@ -47,11 +48,11 @@ public class DefaultChatState implements ChatState {
             final var possibleHeroNames = validator.getSomeClosestToInput(args, 10);
             if (possibleHeroNames[0].distance == 0) {
                 HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
-                                talentProvider);
+                        talentProvider);
                 return new DefaultChatState();
             }
             return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
-                            talentProvider);
+                    talentProvider);
         });
     }
 
@@ -59,14 +60,15 @@ public class DefaultChatState implements ChatState {
         prefix = EnvWrapper.getValue("DISCORD_PREFIX");
     }
 
-    @Override public ChatState handleMessage(WrappedMessage message) {
+    @Override
+    public ChatState handleMessage(WrappedMessage message) {
         final var content = message.getContent();
         logger.info("Message content: {}", content);
-        if (!content.startsWith(prefix) || content.equals("")) {
+        if (message.getSender().isPrefixed() && (!content.startsWith(prefix) || content.equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
-        final var command = splitted[0].substring(1);
+        final var command = message.getSender().isPrefixed() ? splitted[0].substring(1) : splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }
