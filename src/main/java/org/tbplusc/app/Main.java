@@ -1,13 +1,10 @@
 package org.tbplusc.app;
 
-import discord4j.core.DiscordClient;
-import discord4j.core.event.domain.lifecycle.DisconnectEvent;
-import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.discord.interaction.DiscordInitializer;
 import org.tbplusc.app.message.processing.DefaultChatState;
 import org.tbplusc.app.message.processing.MessageHandler;
-import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsRemoteDataProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
@@ -24,8 +21,6 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Application started");
         registerEnvVariables();
-        final var token = EnvWrapper.getValue("DISCORD_TOKEN");
-        final var client = DiscordClient.create(token);
         final MessageHandler messageHandler;
         try {
             messageHandler = createMessageHandler();
@@ -34,15 +29,7 @@ public class Main {
             return;
         }
         logger.info("Message handler is ready");
-        final var gateway = client.login().block();
-        if (gateway == null) {
-            logger.error("Can't connect to discord");
-            return;
-        }
-        gateway.on(MessageCreateEvent.class).map(MessageCreateEvent::getMessage)
-                        .subscribe(message -> messageHandler
-                                        .handleMessage(new WrappedDiscordMessage(message)));
-        gateway.on(DisconnectEvent.class).blockLast();
+        var discordEntity = new DiscordInitializer(messageHandler, logger);
     }
 
     private static Validator createValidator() throws IOException {
@@ -64,5 +51,6 @@ public class Main {
     private static void registerEnvVariables() {
         EnvWrapper.registerValue("DISCORD_TOKEN", System.getenv("DISCORD_TOKEN"));
         EnvWrapper.registerValue("DISCORD_PREFIX", System.getenv("DISCORD_PREFIX"));
+        EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("DISCORD_PREFIX"));
     }
 }
