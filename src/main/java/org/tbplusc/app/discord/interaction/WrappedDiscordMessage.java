@@ -2,7 +2,6 @@ package org.tbplusc.app.discord.interaction;
 
 import discord4j.core.object.entity.Message;
 import org.tbplusc.app.message.processing.WrappedMessage;
-
 import static org.tbplusc.app.discord.interaction.DiscordUtil.getChannelForMessage;
 
 public class WrappedDiscordMessage implements WrappedMessage {
@@ -13,7 +12,7 @@ public class WrappedDiscordMessage implements WrappedMessage {
     }
 
     @Override
-    public String getContextKey() {
+    public String getConversationId() {
         final var authorOptional = message.getAuthor();
         if (authorOptional.isEmpty()) {
             throw new NullPointerException("Message had no author");
@@ -27,12 +26,21 @@ public class WrappedDiscordMessage implements WrappedMessage {
         return authorId.asString() + channelId.asString();
     }
 
-    @Override public String getContent() {
+    @Override
+    public String getContent() {
         return message.getContent();
     }
 
-    @Override public void respond(String text) {
+    @Override
+    public void respond(String text) {
         var channel = getChannelForMessage(message);
         channel.createMessage(text).block();
+    }
+
+    @Override
+    public String getServerId() {
+        var guildId = message.getGuildId();
+        return guildId.orElseThrow(() -> new NullPointerException("No server for message"))
+                        .asString();
     }
 }

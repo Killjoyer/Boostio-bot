@@ -1,7 +1,9 @@
 package org.tbplusc.app.message.processing;
 
 public interface WrappedMessage {
-    String getContextKey();
+    String getConversationId();
+
+    String getServerId();
 
     String getContent();
 
