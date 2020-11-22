@@ -10,7 +10,12 @@ public class WrappedTelegramMessage implements WrappedMessage {
     }
 
     @Override
-    public String getContextKey() {
+    public String getConversationId() {
+        return null;
+    }
+
+    @Override
+    public String getServerId() {
         return null;
     }
 
