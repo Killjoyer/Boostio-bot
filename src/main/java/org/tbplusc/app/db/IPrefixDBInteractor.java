@@ -1,6 +1,6 @@
-package org.tbplusc.app.discord.interaction;
+package org.tbplusc.app.db;
 
-public interface IDiscordDBInteractor {
+public interface IPrefixDBInteractor {
     public void setPrefix(String guildId, String prefix);
 
     public String getPrefix(String guildId);
