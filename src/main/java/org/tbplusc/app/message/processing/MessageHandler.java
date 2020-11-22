@@ -23,7 +23,7 @@ public class MessageHandler {
     }
 
     private void processMessage(WrappedMessage message) {
-        final var key = message.getContextKey();
+        final var key = message.getConversationId();
         if (!states.containsKey(key)) {
             states.put(key, new UserStore());
         }

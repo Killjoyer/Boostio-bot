@@ -2,6 +2,9 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.IAliasesDBInteractor;
+import org.tbplusc.app.db.IPrefixDBInteractor;
+import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
@@ -18,23 +21,27 @@ import java.util.function.BiFunction;
 public class DefaultChatState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(DefaultChatState.class);
 
-    private final String prefix;
+    private final String defaultPrefix;
 
     private static final Map<String, BiFunction<String, WrappedMessage, ChatState>> commands =
             new HashMap<>();
 
-    public static void registerCommand(String name, BiFunction<String, WrappedMessage, ChatState> action) {
+    public static void registerCommand(String name,
+                    BiFunction<String, WrappedMessage, ChatState> action) {
         commands.put(name, action);
     }
 
     /**
      * Register "echo", "authors", "builds" commands.
-     *
-     * @param validator      object to find closest word for "builds" command
-     * @param talentProvider object to get builds for hero
+     * 
+     * @param validator           object to find closest word for "builds" command
+     * @param talentProvider      object to get builds for hero
+     * @param aliasesDBInteractor object working with aliases
+     * @param prefixDBInteractor  object working with discord related settings
      */
-    public static void registerDefaultCommands(Validator validator,
-                                               ITalentProvider talentProvider) {
+    public static void registerDefaultCommands(Validator validator, ITalentProvider talentProvider,
+                    IAliasesDBInteractor aliasesDBInteractor,
+                    IPrefixDBInteractor prefixDBInteractor) {
         registerCommand("echo", (args, message) -> {
             message.respond(args.equals("") ? "Не могу заэхоть пустую строку" : args);
             return new DefaultChatState();
@@ -54,10 +61,29 @@ public class DefaultChatState implements ChatState {
             return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
                     talentProvider);
         });
+        registerCommand("prefix", (args, message) -> {
+            final var guildId = ((WrappedDiscordMessage) message).getServerId(); // FIXME
+            logger.info("Server id: {}", guildId);
+            prefixDBInteractor.setPrefix(guildId, args);
+            return new DefaultChatState();
+        });
+        registerCommand("alias", (args, message) -> {
+            final var guildId = ((WrappedDiscordMessage) message).getServerId();
+            logger.info("Server id: {}", guildId);
+            final var argsSplit = args.split(" ", 2);
+            aliasesDBInteractor.addAlias(guildId, argsSplit[0], argsSplit[1]);
+            return new DefaultChatState();
+        });
+        registerCommand("rmv-alias", (args, message) -> {
+            final var guildId = ((WrappedDiscordMessage) message).getServerId();
+            logger.info("Server id: {}", guildId);
+            aliasesDBInteractor.removeAlias(guildId, args);
+            return new DefaultChatState();
+        });
     }
 
     public DefaultChatState() {
-        prefix = EnvWrapper.getValue("DISCORD_PREFIX");
+        defaultPrefix = EnvWrapper.getValue("DISCORD_PREFIX");
     }
 
     @Override

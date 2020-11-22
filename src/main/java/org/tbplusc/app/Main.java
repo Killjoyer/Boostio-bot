@@ -35,8 +35,8 @@ public class Main {
     private static Validator createValidator() throws IOException {
         final var heroes = JsonDeserializer.deserializeHeroList(org.tbplusc.app.util.HttpGetter
                         .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
-        return new Validator(Arrays.asList(heroes.stream().map((hero) -> hero.name)
-                        .toArray(String[]::new)));
+        return new Validator(Arrays
+                        .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
     }
 
     private static ITalentProvider createIcyVeinsTalentProvider() {
@@ -44,7 +44,8 @@ public class Main {
     }
 
     private static MessageHandler createMessageHandler() throws IOException {
-        DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider());
+        DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider(),
+                        null, null);
         return new MessageHandler();
     }
 
