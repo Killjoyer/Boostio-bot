@@ -33,7 +33,7 @@ public class WrappedTelegramMessage implements WrappedMessage {
 
     @Override
     public String getContent() {
-        return null;
+        return message.getText();
     }
 
     @Override

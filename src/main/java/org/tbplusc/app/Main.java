@@ -31,7 +31,7 @@ public class Main {
         try {
             messageHandler = createMessageHandler();
         } catch (IOException e) {
-            logger.error("Can't create бmessage handler", e);
+            logger.error("Can't create message handler", e);
             return;
         }
         logger.info("Message handler is ready");
@@ -41,7 +41,7 @@ public class Main {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
             var telegramEntity = new TelegramBoostioBot();
             telegramEntity.setUp(messageHandler, logger);
-            telegramBotsApi.registerBot((LongPollingBot) telegramEntity);
+            telegramBotsApi.registerBot(telegramEntity);
             logger.info("Telegram initialized");
         } catch (TelegramApiException e) {
             logger.error("Cannot create TG session");
@@ -70,6 +70,6 @@ public class Main {
     private static void registerEnvVariables() {
         EnvWrapper.registerValue("DISCORD_TOKEN", System.getenv("DISCORD_TOKEN"));
         EnvWrapper.registerValue("DISCORD_PREFIX", System.getenv("DISCORD_PREFIX"));
-        EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("TELEGRAM_PREFIX"));
+        EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("TELEGRAM_TOKEN"));
     }
 }
