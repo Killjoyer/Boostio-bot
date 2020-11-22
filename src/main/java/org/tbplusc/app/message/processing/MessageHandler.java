@@ -28,14 +28,19 @@ public class MessageHandler {
             states.put(key, new UserStore());
         }
         final var userStore = states.get(key);
-        final var unlocked = userStore.messageInProcess.tryLock();
-        if (!unlocked) {
+        if (!userStore.messageInProcess.tryLock()) {
             message.respond("Your previous message in process");
             return;
         }
-        logger.info("Started processing message from {}", key);
-        userStore.setState(userStore.getState().handleMessage(message));
-        userStore.messageInProcess.unlock();
+        try {
+            logger.info("Started processing message from {}", key);
+            userStore.setState(userStore.getState().handleMessage(message));
+        } catch (Exception e) {
+            logger.error("Message processing failed with error", e);
+            return;
+        } finally {
+            userStore.messageInProcess.unlock();
+        }
         logger.info("Finished processing message from {}", key);
     }
 }

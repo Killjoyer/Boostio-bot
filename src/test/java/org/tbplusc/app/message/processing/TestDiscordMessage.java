@@ -8,6 +8,11 @@ public class TestDiscordMessage implements WrappedMessage {
     private final Consumer<String> callback;
     private final String content;
 
+    @Override
+    public MessageSender getSender() {
+        return MessageSender.discord;
+    }
+
     public TestDiscordMessage(Consumer<String> callback, String content) {
         this.callback = callback;
         this.content = content;
