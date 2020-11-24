@@ -1,10 +1,18 @@
 package org.tbplusc.app.message.processing;
 
-public enum MessageSender {
-    discord,
-    telegram;
+import org.tbplusc.app.util.EnvWrapper;
 
-    public boolean isPrefixed() {
-        return this == MessageSender.discord;
+public enum MessageSender {
+    discord(EnvWrapper.getValue("DISCORD_PREFIX")),
+    telegram("/");
+
+    public final String prefix;
+
+    MessageSender(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public boolean hasPrefix() {
+        return this.prefix != null;
     }
 }
