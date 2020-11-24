@@ -17,9 +17,8 @@ public class TelegramInitializer {
     public static void initialize(MessageHandler messageHandler, Logger logger) {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            var telegramEntity = new TelegramBoostioBot();
-            telegramEntity.setUp(messageHandler, logger);
-            telegramBotsApi.registerBot(telegramEntity);
+            var bot = new TelegramBoostioBot(messageHandler, logger);
+            telegramBotsApi.registerBot(bot);
             logger.info("Telegram initialized");
         } catch (TelegramApiException e) {
             logger.error("Cannot create TG session");

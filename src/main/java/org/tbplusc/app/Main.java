@@ -15,9 +15,11 @@ import org.tbplusc.app.util.JsonDeserializer;
 import org.tbplusc.app.validator.Validator;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -27,10 +29,12 @@ public class Main {
         void invoke(T1 t1, T2 t2);
     }
 
-    private static final List<Action<MessageHandler, Logger>> messengers = Arrays.asList(
-            DiscordInitializer::initialize,
-            TelegramInitializer::initialize
-    );
+    private static final Map<String, Action<MessageHandler, Logger>> messengers = new HashMap<>() {
+        {
+            put("Discord", DiscordInitializer::initialize);
+            put("Telegram", TelegramInitializer::initialize);
+        }
+    };
 
     public static void main(String[] args) {
         logger.info("Application started");
@@ -43,7 +47,7 @@ public class Main {
             return;
         }
         logger.info("Message handler is ready");
-        var messengerThreads = startMessangers(messageHandler, logger);
+        var messengerThreads = startMessengers(messageHandler);
     }
 
     private static Validator createValidator() throws IOException {
@@ -69,17 +73,18 @@ public class Main {
         EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("TELEGRAM_TOKEN"));
     }
 
-    private static List<Thread> startMessangers(MessageHandler messageHandler, Logger logger) {
+    private static List<Thread> startMessengers(MessageHandler messageHandler) {
+        var logger = Main.logger;
         List<Thread> threads = new ArrayList<>(Collections.emptyList());
-        for (var messenger : messengers) {
+        for (var messenger : messengers.entrySet()) {
             try {
-                var th = new Thread(() -> messenger.invoke(messageHandler, logger));
-                th.setName(messenger.getClass().getName());
+                var th = new Thread(() -> messenger.getValue().invoke(messageHandler, logger));
+                th.setName(messenger.getKey());
                 threads.add(th);
                 th.start();
-                logger.info("Started " + messenger.getClass().getName());
+                logger.info("Started thread for " + messenger.getKey());
             } catch (Exception e) {
-                logger.error("Error occurred while initializing " + messenger.getClass().getName(), e);
+                logger.error("Error occurred while initializing " + messenger.getKey(), e);
             }
         }
         logger.info("Stopped initializing threads");

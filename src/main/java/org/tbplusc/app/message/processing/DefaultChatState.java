@@ -21,8 +21,6 @@ import java.util.function.BiFunction;
 public class DefaultChatState implements ChatState {
     private static final Logger logger = LoggerFactory.getLogger(DefaultChatState.class);
 
-    private final String defaultPrefix;
-
     private static final Map<String, BiFunction<String, WrappedMessage, ChatState>> commands =
                     new HashMap<>();
 
@@ -82,21 +80,19 @@ public class DefaultChatState implements ChatState {
         });
     }
 
-    public DefaultChatState() {
-        defaultPrefix = EnvWrapper.getValue("DISCORD_PREFIX");
-    }
-
     @Override
     public ChatState handleMessage(WrappedMessage message) {
+        var prefix = message.getSender().prefix;
         final var content = message.getContent();
         logger.info("Message content: {}", content);
-        if (message.getSender().isPrefixed()
-                        && (!content.startsWith(defaultPrefix) || content.equals(""))) {
+        logger.info("User's prefix is: {}", prefix);
+        if (message.getSender().hasPrefix()
+                        && (!content.startsWith(prefix) || content.equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
         final var command =
-                        message.getSender().isPrefixed() ? splitted[0].substring(1) : splitted[0];
+                        message.getSender().hasPrefix() ? splitted[0].substring(prefix.length()) : splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }

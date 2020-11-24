@@ -11,17 +11,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class TelegramBoostioBot extends TelegramLongPollingBot {
     private final String token = EnvWrapper.getValue("TELEGRAM_TOKEN");
-    private MessageHandler messageHandler;
-    private Logger logger;
+    private final MessageHandler messageHandler;
+    private final Logger logger;
 
-//    public TelegramBoostioBot(MessageHandler messageHandler, Logger logger) {
-//        this.messageHandler = messageHandler;
-//        this.logger = logger;
-//    }
-
-    public void setUp(MessageHandler messageHandler, Logger logger){
-        this.logger = logger;
+    public TelegramBoostioBot(MessageHandler messageHandler, Logger logger) {
         this.messageHandler = messageHandler;
+        this.logger = logger;
     }
 
     public Logger getLogger() {
