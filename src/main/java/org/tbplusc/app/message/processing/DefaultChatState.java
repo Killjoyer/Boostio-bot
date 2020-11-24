@@ -6,7 +6,6 @@ import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
-import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 
 import java.util.Arrays;
@@ -82,17 +81,17 @@ public class DefaultChatState implements ChatState {
 
     @Override
     public ChatState handleMessage(WrappedMessage message) {
-        var prefix = message.getSender().prefix;
+        var prefix = message.getSenderApp().prefix;
         final var content = message.getContent();
         logger.info("Message content: {}", content);
         logger.info("User's prefix is: {}", prefix);
-        if (message.getSender().hasPrefix()
+        if (message.getSenderApp().hasPrefix()
                         && (!content.startsWith(prefix) || content.equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
         final var command =
-                        message.getSender().hasPrefix() ? splitted[0].substring(prefix.length()) : splitted[0];
+                        message.getSenderApp().hasPrefix() ? splitted[0].substring(prefix.length()) : splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }

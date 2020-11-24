@@ -17,7 +17,7 @@ public class WrappedTelegramMessage implements WrappedMessage {
     }
 
     @Override
-    public MessageSender getSender() {
+    public MessageSender getSenderApp() {
         return MessageSender.telegram;
     }
 

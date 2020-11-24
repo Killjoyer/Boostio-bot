@@ -9,7 +9,7 @@ public class TestDiscordMessage implements WrappedMessage {
     private final String content;
 
     @Override
-    public MessageSender getSender() {
+    public MessageSender getSenderApp() {
         return MessageSender.discord;
     }
 
