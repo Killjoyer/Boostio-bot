@@ -1,5 +1,6 @@
 package org.tbplusc.app;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.discord.interaction.DiscordInitializer;
@@ -8,21 +9,28 @@ import org.tbplusc.app.message.processing.MessageHandler;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsRemoteDataProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
-import org.tbplusc.app.telegram.interaction.TelegramBoostioBot;
+import org.tbplusc.app.telegram.interaction.TelegramInitializer;
 import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.util.JsonDeserializer;
 import org.tbplusc.app.validator.Validator;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.LongPollingBot;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    private interface Action<T1, T2> {
+        void invoke(T1 t1, T2 t2);
+    }
+
+    private static final List<Action<MessageHandler, Logger>> messengers = Arrays.asList(
+            DiscordInitializer::initialize,
+            TelegramInitializer::initialize
+    );
 
     public static void main(String[] args) {
         logger.info("Application started");
@@ -35,26 +43,14 @@ public class Main {
             return;
         }
         logger.info("Message handler is ready");
-//        var discordEntity = new DiscordInitializer(messageHandler, logger);
-        logger.info("Dicord initialized");
-        try {
-            TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            var telegramEntity = new TelegramBoostioBot();
-            telegramEntity.setUp(messageHandler, logger);
-            telegramBotsApi.registerBot(telegramEntity);
-            logger.info("Telegram initialized");
-        } catch (TelegramApiException e) {
-            logger.error("Cannot create TG session");
-            e.printStackTrace();
-        }
-
+        var messengerThreads = startMessangers(messageHandler, logger);
     }
 
     private static Validator createValidator() throws IOException {
         final var heroes = JsonDeserializer.deserializeHeroList(org.tbplusc.app.util.HttpGetter
-                        .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
+                .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
         return new Validator(Arrays
-                        .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
+                .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
     }
 
     private static ITalentProvider createIcyVeinsTalentProvider() {
@@ -63,7 +59,7 @@ public class Main {
 
     private static MessageHandler createMessageHandler() throws IOException {
         DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider(),
-                        null, null);
+                null, null);
         return new MessageHandler();
     }
 
@@ -71,5 +67,22 @@ public class Main {
         EnvWrapper.registerValue("DISCORD_TOKEN", System.getenv("DISCORD_TOKEN"));
         EnvWrapper.registerValue("DISCORD_PREFIX", System.getenv("DISCORD_PREFIX"));
         EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("TELEGRAM_TOKEN"));
+    }
+
+    private static List<Thread> startMessangers(MessageHandler messageHandler, Logger logger) {
+        List<Thread> threads = new ArrayList<>(Collections.emptyList());
+        for (var messenger : messengers) {
+            try {
+                var th = new Thread(() -> messenger.invoke(messageHandler, logger));
+                th.setName(messenger.getClass().getName());
+                threads.add(th);
+                th.start();
+                logger.info("Started " + messenger.getClass().getName());
+            } catch (Exception e) {
+                logger.error("Error occurred while initializing " + messenger.getClass().getName(), e);
+            }
+        }
+        logger.info("Stopped initializing threads");
+        return threads;
     }
 }
