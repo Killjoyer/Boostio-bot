@@ -1,7 +1,7 @@
 package org.tbplusc.app.db;
 
 public interface IPrefixDBInteractor {
-    public void setPrefix(String guildId, String prefix);
+    void setPrefix(String guildId, String prefix) throws FailedWriteException;
 
-    public String getPrefix(String guildId);
+    String getPrefix(String guildId) throws FailedReadException;
 }
