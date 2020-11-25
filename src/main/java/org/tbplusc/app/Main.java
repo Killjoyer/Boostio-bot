@@ -3,6 +3,7 @@ package org.tbplusc.app;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.*;
 import org.tbplusc.app.discord.interaction.DiscordInitializer;
 import org.tbplusc.app.message.processing.DefaultChatState;
 import org.tbplusc.app.message.processing.MessageHandler;
@@ -39,6 +40,10 @@ public class Main {
     public static void main(String[] args) {
         logger.info("Application started");
         registerEnvVariables();
+        var database = MongoDBInteractor.getMongoDatabase();
+        var prefixesInteractor = new MongoPrefixesDBInteractor(database);
+        var aliasesInteractor = new MongoAliasesDBInteractor(database);
+
         final MessageHandler messageHandler;
         try {
             messageHandler = createMessageHandler();
@@ -71,6 +76,7 @@ public class Main {
         EnvWrapper.registerValue("DISCORD_TOKEN", System.getenv("DISCORD_TOKEN"));
         EnvWrapper.registerValue("DISCORD_PREFIX", System.getenv("DISCORD_PREFIX"));
         EnvWrapper.registerValue("TELEGRAM_TOKEN", System.getenv("TELEGRAM_TOKEN"));
+        EnvWrapper.registerValue("MONGO_CONN_STRING", System.getenv("MONGO_CONN_STRING"));
     }
 
     private static List<Thread> startMessengers(MessageHandler messageHandler) {

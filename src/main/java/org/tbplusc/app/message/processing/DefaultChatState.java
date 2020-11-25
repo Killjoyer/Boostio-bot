@@ -2,6 +2,7 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.FailedWriteException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
@@ -30,7 +31,7 @@ public class DefaultChatState implements ChatState {
 
     /**
      * Register "echo", "authors", "builds" commands.
-     * 
+     *
      * @param validator           object to find closest word for "builds" command
      * @param talentProvider      object to get builds for hero
      * @param aliasesDBInteractor object working with aliases
@@ -61,37 +62,48 @@ public class DefaultChatState implements ChatState {
         registerCommand("prefix", (args, message) -> {
             final var guildId = ((WrappedDiscordMessage) message).getServerId(); // FIXME
             logger.info("Server id: {}", guildId);
-            prefixDBInteractor.setPrefix(guildId, args);
+            try {
+                prefixDBInteractor.setPrefix(guildId, args);
+            } catch (FailedWriteException ignored) {
+            }
             return new DefaultChatState();
         });
         registerCommand("alias", (args, message) -> {
             final var guildId = ((WrappedDiscordMessage) message).getServerId();
             logger.info("Server id: {}", guildId);
             final var argsSplit = args.split(" ", 2);
-            aliasesDBInteractor.addAlias(guildId, argsSplit[0], argsSplit[1]);
+            try {
+                aliasesDBInteractor.addAlias(guildId, argsSplit[0], argsSplit[1]);
+            } catch (FailedWriteException e) {
+                logger.error("failed to add alias", e);
+            }
             return new DefaultChatState();
         });
         registerCommand("rmv-alias", (args, message) -> {
             final var guildId = ((WrappedDiscordMessage) message).getServerId();
             logger.info("Server id: {}", guildId);
-            aliasesDBInteractor.removeAlias(guildId, args);
+            try {
+                aliasesDBInteractor.removeAlias(guildId, args);
+            } catch (FailedWriteException e) {
+                logger.error("failed to remove alias", e);
+            }
             return new DefaultChatState();
         });
     }
 
-    @Override
-    public ChatState handleMessage(WrappedMessage message) {
+    @Override public ChatState handleMessage(WrappedMessage message) {
         var prefix = message.getSenderApp().prefix;
         final var content = message.getContent();
         logger.info("Message content: {}", content);
         logger.info("User's prefix is: {}", prefix);
-        if (message.getSenderApp().hasPrefix()
-                        && (!content.startsWith(prefix) || content.equals(""))) {
+        if (message.getSenderApp().hasPrefix() && (!content.startsWith(prefix) || content
+                        .equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
-        final var command =
-                        message.getSenderApp().hasPrefix() ? splitted[0].substring(prefix.length()) : splitted[0];
+        final var command = message.getSenderApp().hasPrefix() ?
+                        splitted[0].substring(prefix.length()) :
+                        splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }
