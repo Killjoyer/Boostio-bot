@@ -1,11 +1,8 @@
 package org.tbplusc.app.telegram.interaction;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.tbplusc.app.message.processing.MessageHandler;
 import org.tbplusc.app.util.EnvWrapper;
-import org.telegram.telegrambots.bots.DefaultAbsSender;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
