@@ -2,6 +2,7 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.talent.helper.HeroConsts;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
@@ -21,17 +22,21 @@ public class HeroSelectionState implements ChatState {
     private final WrappedMessage message;
     private final ITalentProvider talentProvider;
 
+    private final IAliasesDBInteractor aliasesDBInteractor;
+
     /**
      * ChatState to allow user to select hero from closest to his text.
+     * 
      * @param availableHeroes heroes list provided by Validator
-     * @param message message with command from user
-     * @param talentProvider object to get talents from somewhere
+     * @param message         message with command from user
+     * @param talentProvider  object to get talents from somewhere
      */
     public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
-                    ITalentProvider talentProvider) {
+                    ITalentProvider talentProvider, IAliasesDBInteractor aliasesDBInteractor) {
         this.availableHeroes = availableHeroes;
         this.message = message;
         this.talentProvider = talentProvider;
+        this.aliasesDBInteractor = aliasesDBInteractor;
         showInitMessage();
     }
 
@@ -45,13 +50,15 @@ public class HeroSelectionState implements ChatState {
 
     /**
      * Format selected hero build for discord and send it as message response.
-     * @param message message to respond
+     * 
+     * @param message        message to respond
      * @param heroName
      * @param talentProvider object to get talents from somewhere
      */
     public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
-                    ITalentProvider talentProvider) {
-        final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
+                    ITalentProvider talentProvider, IAliasesDBInteractor aliasesDBInteractor) {
+        final var heroByAlias = aliasesDBInteractor.getHeroByAlias(message.getServerId(), heroName);
+        final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroByAlias);
         logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
             final var builds = talentProvider.getBuilds(normalizedHeroName);
@@ -70,14 +77,15 @@ public class HeroSelectionState implements ChatState {
         }
     }
 
-    @Override public ChatState handleMessage(WrappedMessage message) {
+    @Override
+    public ChatState handleMessage(WrappedMessage message) {
         var number = Integer.parseInt(message.getContent());
         if (number < 1 || number >= 10) {
             message.respond("Wrong number");
             return this;
         }
         final var heroName = availableHeroes.get(number - 1).word;
-        showHeroBuildToDiscord(message, heroName, talentProvider);
-        return new DefaultChatState();
+        showHeroBuildToDiscord(message, heroName, talentProvider, aliasesDBInteractor);
+        return null;
     }
 }

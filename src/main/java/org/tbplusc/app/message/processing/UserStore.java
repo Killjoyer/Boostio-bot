@@ -8,8 +8,8 @@ public class UserStore {
 
     public final Lock messageInProcess = new ReentrantLock();
 
-    public UserStore() {
-        state = new DefaultChatState();
+    public UserStore(DefaultChatState defaultChatState) {
+        state = defaultChatState;
     }
 
     public ChatState getState() {
