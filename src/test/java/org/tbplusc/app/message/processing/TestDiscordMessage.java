@@ -35,6 +35,6 @@ public class TestDiscordMessage implements WrappedMessage {
 
     @Override
     public String getServerId() {
-        throw new NotImplementedException();
+        return "BB";
     }
 }
