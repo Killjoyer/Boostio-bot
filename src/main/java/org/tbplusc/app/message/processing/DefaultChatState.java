@@ -2,6 +2,7 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.FailedWriteException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
@@ -60,22 +61,31 @@ public class DefaultChatState implements ChatState {
             return defaultChatState;
         });
         registerCommand("build", (args, message) -> {
-            logger.info("Typed hero name: {}", args);
-            var aliases = aliasesDBInteractor.getAliases(message.getServerId());
-            final var possibleHeroNames = validator.getSomeClosestToInput(args, 10, aliases);
-            if (possibleHeroNames[0].distance == 0) {
-                HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
+            try {
+                logger.info("Typed hero name: {}", args);
+                var aliases = aliasesDBInteractor.getAliases(message.getServerId());
+                final var possibleHeroNames = validator.getSomeClosestToInput(args, 10, aliases);
+                if (possibleHeroNames[0].distance == 0) {
+                    HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
+                                    talentProvider, aliasesDBInteractor);
+                    return defaultChatState;
+                }
+                return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
                                 talentProvider, aliasesDBInteractor);
+            } catch (FailedReadException e) {
+                message.respond("Unable to get hero from DB");
                 return defaultChatState;
             }
-            return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
-                            talentProvider, aliasesDBInteractor);
         });
         registerCommand("prefix", (args, message) -> {
             if (message.getSenderApp() == MessageSender.discord) {
                 final var serverId = message.getServerId();
                 logger.info("Server id: {}", serverId);
-                prefixDBInteractor.setPrefix(serverId, args);
+                try {
+                    prefixDBInteractor.setPrefix(serverId, args);
+                } catch (FailedWriteException e) {
+                    logger.error("Unable to write prefix to DB", e);
+                }
             } else {
                 message.respond("Нельзя изменить префикс");
             }
@@ -85,32 +95,51 @@ public class DefaultChatState implements ChatState {
             final var serverId = message.getServerId();
             logger.info("Server id: {}", serverId);
             final var argsSplit = args.split(" ", 2);
-            aliasesDBInteractor.addAlias(serverId, argsSplit[0], argsSplit[1]);
+            try {
+                aliasesDBInteractor.addAlias(serverId, argsSplit[0], argsSplit[1]);
+            } catch (FailedWriteException e) {
+                message.respond("Unable to write alias to DB");
+            }
             return defaultChatState;
         });
         registerCommand("rmv-alias", (args, message) -> {
             final var serverId = message.getServerId();
             logger.info("Server id: {}", serverId);
-            aliasesDBInteractor.removeAlias(serverId, args);
+            try {
+                aliasesDBInteractor.removeAlias(serverId, args);
+            } catch (FailedWriteException e) {
+                message.respond("Unable to delete alias from DB");
+            }
             return defaultChatState;
         });
     }
 
-    @Override public ChatState handleMessage(WrappedMessage message) {
+    @Override
+    public ChatState handleMessage(WrappedMessage message) {
         var prefix = message.getSenderApp().prefix;
-        if (message.getSenderApp() == MessageSender.discord)
-            prefix = prefixDBInteractor.getPrefix(message.getServerId());
+        if (message.getSenderApp() == MessageSender.discord) {
+            try {
+                prefix = prefixDBInteractor.getPrefix(message.getServerId());
+            } catch (FailedReadException e) {
+                try {
+                    prefixDBInteractor.setPrefix(message.getServerId(), prefix);
+                } catch (FailedWriteException b) {
+                    message.respond("Билли бонс умер");
+                    return this;
+                }
+            }
+        }
         final var content = message.getContent();
         logger.info("Message content: {}", content);
         logger.info("User's prefix is: {}", prefix);
-        if (message.getSenderApp().hasPrefix() && (!content.startsWith(prefix) || content
-                        .equals(""))) {
+        if (message.getSenderApp().hasPrefix()
+                        && (!content.startsWith(prefix) || content.equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
-        final var command = message.getSenderApp().hasPrefix() ?
-                        splitted[0].substring(prefix.length()) :
-                        splitted[0];
+        final var command =
+                        message.getSenderApp().hasPrefix() ? splitted[0].substring(prefix.length())
+                                        : splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }

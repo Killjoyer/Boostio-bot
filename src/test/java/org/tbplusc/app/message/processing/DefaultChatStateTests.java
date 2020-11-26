@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.talent.helper.HeroBuild;
@@ -27,7 +28,7 @@ public class DefaultChatStateTests {
     private HashMap<String, String> aliases;
 
     @Before
-    public void setUp() {
+    public void setUp() throws FailedReadException {
         validatorMock = Mockito.mock(Validator.class);
         talentHelperMock = Mockito.mock(ITalentProvider.class);
         aliasesDBInteractorMock = Mockito.mock(IAliasesDBInteractor.class);
@@ -52,7 +53,7 @@ public class DefaultChatStateTests {
     }
 
     @Test
-    public void testBuildsCommandWithExactMatch() throws IOException {
+    public void testBuildsCommandWithExactMatch() throws IOException, FailedReadException {
         Mockito.when(validatorMock.getSomeClosestToInput("test", 10, aliases))
                         .thenReturn(new WordDistancePair[] {new WordDistancePair("test", 0),
                             new WordDistancePair("test1", 1),});
@@ -71,7 +72,7 @@ public class DefaultChatStateTests {
     }
 
     @Test
-    public void testBuildsCommandWithNonExactMatch() throws IOException {
+    public void testBuildsCommandWithNonExactMatch() throws IOException, FailedReadException {
         Mockito.when(validatorMock.getSomeClosestToInput("test1", 10, aliases))
                         .thenReturn(new WordDistancePair[] {new WordDistancePair("test2", 1),
                             new WordDistancePair("test23", 2),});

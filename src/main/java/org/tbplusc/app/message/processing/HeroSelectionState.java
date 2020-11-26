@@ -2,6 +2,7 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.talent.helper.HeroConsts;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
@@ -57,24 +58,31 @@ public class HeroSelectionState implements ChatState {
      */
     public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
                     ITalentProvider talentProvider, IAliasesDBInteractor aliasesDBInteractor) {
-        final var heroByAlias = aliasesDBInteractor.getHeroByAlias(message.getServerId(), heroName);
-        final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroByAlias);
-        logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
-            final var builds = talentProvider.getBuilds(normalizedHeroName);
-            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
-            builds.getBuilds().stream().map((build) -> {
-                final var talents = new StringBuilder();
-                for (var i = 0; i < build.getTalents().size(); i++) {
-                    talents.append(String.format("%3d. %s \n", HeroConsts.HERO_TALENTS_LEVELS[i],
-                                    build.getTalents().get(i)));
-                }
-                return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
-                                talents, build.getDescription());
-            }).forEach(message::respond);
-        } catch (IOException e) {
-            logger.error("Hero was not loaded", e);
+            final var heroByAlias =
+                            aliasesDBInteractor.getHeroByAlias(message.getServerId(), heroName);
+            final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroByAlias);
+            logger.info("Normalized hero name: {}", normalizedHeroName);
+            try {
+                final var builds = talentProvider.getBuilds(normalizedHeroName);
+                message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
+                builds.getBuilds().stream().map((build) -> {
+                    final var talents = new StringBuilder();
+                    for (var i = 0; i < build.getTalents().size(); i++) {
+                        talents.append(String.format("%3d. %s \n",
+                                        HeroConsts.HERO_TALENTS_LEVELS[i],
+                                        build.getTalents().get(i)));
+                    }
+                    return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
+                                    talents, build.getDescription());
+                }).forEach(message::respond);
+            } catch (IOException e) {
+                logger.error("Hero was not loaded", e);
+            }
+        } catch (FailedReadException e) {
+            message.respond("No such alias");
         }
+
     }
 
     @Override

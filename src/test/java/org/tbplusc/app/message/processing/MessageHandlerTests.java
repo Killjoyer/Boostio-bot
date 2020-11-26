@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.util.EnvWrapper;
@@ -22,7 +23,7 @@ public class MessageHandlerTests {
     private MessageHandler messageHandler = new MessageHandler(defaultChatState);
 
     @Before
-    public void setUp() {
+    public void setUp() throws FailedReadException {
         EnvWrapper.registerValue("DISCORD_PREFIX", "!");
         Mockito.when(prefixDBInteractoMock.getPrefix("BB")).thenReturn("!");
     }
