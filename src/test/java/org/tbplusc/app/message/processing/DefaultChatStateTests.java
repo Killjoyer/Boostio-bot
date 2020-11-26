@@ -55,8 +55,8 @@ public class DefaultChatStateTests {
     @Test
     public void testBuildsCommandWithExactMatch() throws IOException, FailedReadException {
         Mockito.when(validatorMock.getSomeClosestToInput("test", 10, aliases))
-                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", 0),
-                            new WordDistancePair("test1", 1),});
+                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "test", 0),
+                            new WordDistancePair("test1", "test1", 1),});
         Mockito.when(talentHelperMock.getBuilds("test"))
                         .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("main", "main",
                                         List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
@@ -74,8 +74,9 @@ public class DefaultChatStateTests {
     @Test
     public void testBuildsCommandWithNonExactMatch() throws IOException, FailedReadException {
         Mockito.when(validatorMock.getSomeClosestToInput("test1", 10, aliases))
-                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test2", 1),
-                            new WordDistancePair("test23", 2),});
+                        .thenReturn(new WordDistancePair[] {
+                            new WordDistancePair("test2", "test2", 1),
+                            new WordDistancePair("test23", "test23", 2),});
         Mockito.when(talentHelperMock.getBuilds("test23"))
                         .thenReturn(new HeroBuilds("test23", List.of(new HeroBuild("main", "main",
                                         List.of("a", "b", "c", "d", "CHECK", "f", "g")))));

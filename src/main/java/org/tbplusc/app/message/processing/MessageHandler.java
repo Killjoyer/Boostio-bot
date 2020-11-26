@@ -36,7 +36,13 @@ public class MessageHandler {
         }
         try {
             logger.info("Started processing message from {}", key);
-            userStore.setState(userStore.getState().handleMessage(message));
+            var newState = userStore.getState().handleMessage(message);
+            if (newState == null) {
+                userStore.setState(defaultChatState);
+            } else {
+                userStore.setState(newState);
+            }
+
         } catch (Exception e) {
             logger.error("Message processing failed with error", e);
             return;

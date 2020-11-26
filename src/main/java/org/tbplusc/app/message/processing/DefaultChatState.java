@@ -66,8 +66,8 @@ public class DefaultChatState implements ChatState {
                 var aliases = aliasesDBInteractor.getAliases(message.getServerId());
                 final var possibleHeroNames = validator.getSomeClosestToInput(args, 10, aliases);
                 if (possibleHeroNames[0].distance == 0) {
-                    HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
-                                    talentProvider, aliasesDBInteractor);
+                    HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].hero,
+                                    talentProvider);
                     return defaultChatState;
                 }
                 return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,

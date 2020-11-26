@@ -33,7 +33,7 @@ public class Main {
     private static final Map<String, Action<MessageHandler, Logger>> messengers = new HashMap<>() {
         {
             put("Discord", DiscordInitializer::initialize);
-            // put("Telegram", TelegramInitializer::initialize);
+            put("Telegram", TelegramInitializer::initialize);
         }
     };
 
@@ -46,7 +46,7 @@ public class Main {
 
         final MessageHandler messageHandler;
         try {
-            messageHandler = createMessageHandler();
+            messageHandler = createMessageHandler(aliasesInteractor, prefixesInteractor);
         } catch (IOException e) {
             logger.error("Can't create message handler", e);
             return;
@@ -58,18 +58,20 @@ public class Main {
     private static Validator createValidator() throws IOException {
         final var heroes = JsonDeserializer.deserializeHeroList(org.tbplusc.app.util.HttpGetter
                         .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
-        return new Validator(Arrays
+        var heroNames = new ArrayList<>(Arrays
                         .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
+        return new Validator(heroNames);
     }
 
     private static ITalentProvider createIcyVeinsTalentProvider() {
         return new IcyVeinsTalentProvider(new IcyVeinsRemoteDataProvider());
     }
 
-    private static MessageHandler createMessageHandler() throws IOException {
-        var defaultChatState = new DefaultChatState(null, null);
+    private static MessageHandler createMessageHandler(IAliasesDBInteractor aliasesDBInteractor,
+                    IPrefixDBInteractor prefixDBInteractor) throws IOException {
+        var defaultChatState = new DefaultChatState(aliasesDBInteractor, prefixDBInteractor);
         DefaultChatState.registerDefaultCommands(defaultChatState, createValidator(),
-                        createIcyVeinsTalentProvider(), null, null);
+                        createIcyVeinsTalentProvider(), aliasesDBInteractor, prefixDBInteractor);
         return new MessageHandler(defaultChatState);
     }
 

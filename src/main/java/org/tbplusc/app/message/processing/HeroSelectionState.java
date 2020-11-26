@@ -44,7 +44,7 @@ public class HeroSelectionState implements ChatState {
     private void showInitMessage() {
         final var heroes = new StringBuilder();
         for (var i = 0; i < availableHeroes.size(); i++) {
-            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).word));
+            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).hero));
         }
         message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
     }
@@ -57,30 +57,23 @@ public class HeroSelectionState implements ChatState {
      * @param talentProvider object to get talents from somewhere
      */
     public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
-                    ITalentProvider talentProvider, IAliasesDBInteractor aliasesDBInteractor) {
+                    ITalentProvider talentProvider) {
+        final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
+        logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
-            final var heroByAlias =
-                            aliasesDBInteractor.getHeroByAlias(message.getServerId(), heroName);
-            final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroByAlias);
-            logger.info("Normalized hero name: {}", normalizedHeroName);
-            try {
-                final var builds = talentProvider.getBuilds(normalizedHeroName);
-                message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
-                builds.getBuilds().stream().map((build) -> {
-                    final var talents = new StringBuilder();
-                    for (var i = 0; i < build.getTalents().size(); i++) {
-                        talents.append(String.format("%3d. %s \n",
-                                        HeroConsts.HERO_TALENTS_LEVELS[i],
-                                        build.getTalents().get(i)));
-                    }
-                    return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
-                                    talents, build.getDescription());
-                }).forEach(message::respond);
-            } catch (IOException e) {
-                logger.error("Hero was not loaded", e);
-            }
-        } catch (FailedReadException e) {
-            message.respond("No such alias");
+            final var builds = talentProvider.getBuilds(normalizedHeroName);
+            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
+            builds.getBuilds().stream().map((build) -> {
+                final var talents = new StringBuilder();
+                for (var i = 0; i < build.getTalents().size(); i++) {
+                    talents.append(String.format("%3d. %s \n", HeroConsts.HERO_TALENTS_LEVELS[i],
+                                    build.getTalents().get(i)));
+                }
+                return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
+                                talents, build.getDescription());
+            }).forEach(message::respond);
+        } catch (IOException e) {
+            logger.error("Hero was not loaded", e);
         }
 
     }
@@ -92,8 +85,8 @@ public class HeroSelectionState implements ChatState {
             message.respond("Wrong number");
             return this;
         }
-        final var heroName = availableHeroes.get(number - 1).word;
-        showHeroBuildToDiscord(message, heroName, talentProvider, aliasesDBInteractor);
+        final var heroName = availableHeroes.get(number - 1).hero;
+        showHeroBuildToDiscord(message, heroName, talentProvider);
         return null;
     }
 }
