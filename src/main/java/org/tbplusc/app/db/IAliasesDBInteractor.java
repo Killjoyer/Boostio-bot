@@ -3,11 +3,11 @@ package org.tbplusc.app.db;
 import java.util.Map;
 
 public interface IAliasesDBInteractor {
-    public void addAlias(String serverId, String alias, String hero);
+    void addAlias(String serverId, String alias, String hero) throws FailedWriteException;
 
-    public void removeAlias(String serverId, String alias);
+    void removeAlias(String serverId, String alias) throws FailedWriteException;
 
-    public Map<String, String> getAliases(String serverId);
+    Map<String, String> getAliases(String serverId) throws FailedReadException;
 
-    public String getHeroByAlias(String serverId, String alias);
+    String getHeroByAlias(String serverId, String alias) throws FailedReadException;
 }

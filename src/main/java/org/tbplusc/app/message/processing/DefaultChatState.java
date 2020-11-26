@@ -2,6 +2,7 @@ package org.tbplusc.app.message.processing;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tbplusc.app.db.FailedWriteException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
@@ -40,7 +41,7 @@ public class DefaultChatState implements ChatState {
 
     /**
      * Register "echo", "authors", "builds" commands.
-     * 
+     *
      * @param validator           object to find closest word for "builds" command
      * @param talentProvider      object to get builds for hero
      * @param aliasesDBInteractor object working with aliases
@@ -95,22 +96,21 @@ public class DefaultChatState implements ChatState {
         });
     }
 
-    @Override
-    public ChatState handleMessage(WrappedMessage message) {
+    @Override public ChatState handleMessage(WrappedMessage message) {
         var prefix = message.getSenderApp().prefix;
         if (message.getSenderApp() == MessageSender.discord)
             prefix = prefixDBInteractor.getPrefix(message.getServerId());
         final var content = message.getContent();
         logger.info("Message content: {}", content);
         logger.info("User's prefix is: {}", prefix);
-        if (message.getSenderApp().hasPrefix()
-                        && (!content.startsWith(prefix) || content.equals(""))) {
+        if (message.getSenderApp().hasPrefix() && (!content.startsWith(prefix) || content
+                        .equals(""))) {
             return this;
         }
         final var splitted = content.split(" ", 2);
-        final var command =
-                        message.getSenderApp().hasPrefix() ? splitted[0].substring(prefix.length())
-                                        : splitted[0];
+        final var command = message.getSenderApp().hasPrefix() ?
+                        splitted[0].substring(prefix.length()) :
+                        splitted[0];
         if (!commands.containsKey(command)) {
             return this;
         }
