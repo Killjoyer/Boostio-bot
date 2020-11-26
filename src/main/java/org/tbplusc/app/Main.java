@@ -33,7 +33,7 @@ public class Main {
     private static final Map<String, Action<MessageHandler, Logger>> messengers = new HashMap<>() {
         {
             put("Discord", DiscordInitializer::initialize);
-            put("Telegram", TelegramInitializer::initialize);
+            // put("Telegram", TelegramInitializer::initialize);
         }
     };
 
@@ -57,9 +57,9 @@ public class Main {
 
     private static Validator createValidator() throws IOException {
         final var heroes = JsonDeserializer.deserializeHeroList(org.tbplusc.app.util.HttpGetter
-                .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
+                        .getBodyFromUrl("https://hotsapi.net/api/v1/heroes"));
         return new Validator(Arrays
-                .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
+                        .asList(heroes.stream().map((hero) -> hero.name).toArray(String[]::new)));
     }
 
     private static ITalentProvider createIcyVeinsTalentProvider() {
@@ -67,9 +67,10 @@ public class Main {
     }
 
     private static MessageHandler createMessageHandler() throws IOException {
-        DefaultChatState.registerDefaultCommands(createValidator(), createIcyVeinsTalentProvider(),
-                null, null);
-        return new MessageHandler();
+        var defaultChatState = new DefaultChatState(null, null);
+        DefaultChatState.registerDefaultCommands(defaultChatState, createValidator(),
+                        createIcyVeinsTalentProvider(), null, null);
+        return new MessageHandler(defaultChatState);
     }
 
     private static void registerEnvVariables() {

@@ -24,9 +24,19 @@ public class DefaultChatState implements ChatState {
     private static final Map<String, BiFunction<String, WrappedMessage, ChatState>> commands =
                     new HashMap<>();
 
+    private final IAliasesDBInteractor aliasesDBInteractor;
+    private final IPrefixDBInteractor prefixDBInteractor;
+
+
     public static void registerCommand(String name,
                     BiFunction<String, WrappedMessage, ChatState> action) {
         commands.put(name, action);
+    }
+
+    public DefaultChatState(IAliasesDBInteractor aliasesDBInteractor,
+                    IPrefixDBInteractor prefixDBInteractor) {
+        this.aliasesDBInteractor = aliasesDBInteractor;
+        this.prefixDBInteractor = prefixDBInteractor;
     }
 
     /**
@@ -37,62 +47,59 @@ public class DefaultChatState implements ChatState {
      * @param aliasesDBInteractor object working with aliases
      * @param prefixDBInteractor  object working with discord related settings
      */
-    public static void registerDefaultCommands(Validator validator, ITalentProvider talentProvider,
+    public static void registerDefaultCommands(DefaultChatState defaultChatState,
+                    Validator validator, ITalentProvider talentProvider,
                     IAliasesDBInteractor aliasesDBInteractor,
                     IPrefixDBInteractor prefixDBInteractor) {
         registerCommand("echo", (args, message) -> {
             message.respond(args.equals("") ? "Не могу заэхоть пустую строку" : args);
-            return new DefaultChatState();
+            return defaultChatState;
         });
         registerCommand("authors", (args, message) -> {
             message.respond("Код писали: Александ Жмышенко, Олег Белахахлий и Semen Зайдельман");
-            return new DefaultChatState();
+            return defaultChatState;
         });
         registerCommand("build", (args, message) -> {
             logger.info("Typed hero name: {}", args);
-            final var possibleHeroNames = validator.getSomeClosestToInput(args, 10);
+            var aliases = aliasesDBInteractor.getAliases(message.getServerId());
+            final var possibleHeroNames = validator.getSomeClosestToInput(args, 10, aliases);
             if (possibleHeroNames[0].distance == 0) {
                 HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].word,
-                                talentProvider);
-                return new DefaultChatState();
+                                talentProvider, aliasesDBInteractor);
+                return defaultChatState;
             }
             return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
-                            talentProvider);
+                            talentProvider, aliasesDBInteractor);
         });
         registerCommand("prefix", (args, message) -> {
-            final var guildId = ((WrappedDiscordMessage) message).getServerId(); // FIXME
-            logger.info("Server id: {}", guildId);
-            try {
-                prefixDBInteractor.setPrefix(guildId, args);
-            } catch (FailedWriteException ignored) {
+            if (message.getSenderApp() == MessageSender.discord) {
+                final var serverId = message.getServerId();
+                logger.info("Server id: {}", serverId);
+                prefixDBInteractor.setPrefix(serverId, args);
+            } else {
+                message.respond("Нельзя изменить префикс");
             }
-            return new DefaultChatState();
+            return defaultChatState;
         });
         registerCommand("alias", (args, message) -> {
-            final var guildId = ((WrappedDiscordMessage) message).getServerId();
-            logger.info("Server id: {}", guildId);
+            final var serverId = message.getServerId();
+            logger.info("Server id: {}", serverId);
             final var argsSplit = args.split(" ", 2);
-            try {
-                aliasesDBInteractor.addAlias(guildId, argsSplit[0], argsSplit[1]);
-            } catch (FailedWriteException e) {
-                logger.error("failed to add alias", e);
-            }
-            return new DefaultChatState();
+            aliasesDBInteractor.addAlias(serverId, argsSplit[0], argsSplit[1]);
+            return defaultChatState;
         });
         registerCommand("rmv-alias", (args, message) -> {
-            final var guildId = ((WrappedDiscordMessage) message).getServerId();
-            logger.info("Server id: {}", guildId);
-            try {
-                aliasesDBInteractor.removeAlias(guildId, args);
-            } catch (FailedWriteException e) {
-                logger.error("failed to remove alias", e);
-            }
-            return new DefaultChatState();
+            final var serverId = message.getServerId();
+            logger.info("Server id: {}", serverId);
+            aliasesDBInteractor.removeAlias(serverId, args);
+            return defaultChatState;
         });
     }
 
     @Override public ChatState handleMessage(WrappedMessage message) {
         var prefix = message.getSenderApp().prefix;
+        if (message.getSenderApp() == MessageSender.discord)
+            prefix = prefixDBInteractor.getPrefix(message.getServerId());
         final var content = message.getContent();
         logger.info("Message content: {}", content);
         logger.info("User's prefix is: {}", prefix);

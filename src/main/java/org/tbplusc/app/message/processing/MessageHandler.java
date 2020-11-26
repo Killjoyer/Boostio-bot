@@ -12,9 +12,11 @@ import java.util.concurrent.Future;
 public class MessageHandler {
     private final Map<String, UserStore> states = new ConcurrentHashMap<>();
     private final ExecutorService threadPool;
+    private final DefaultChatState defaultChatState;
     private static final Logger logger = LoggerFactory.getLogger(MessageHandler.class);
 
-    public MessageHandler() {
+    public MessageHandler(DefaultChatState defaultChatState) {
+        this.defaultChatState = defaultChatState;
         this.threadPool = Executors.newFixedThreadPool(24);
     }
 
@@ -25,7 +27,7 @@ public class MessageHandler {
     private void processMessage(WrappedMessage message) {
         final var key = message.getConversationId();
         if (!states.containsKey(key)) {
-            states.put(key, new UserStore());
+            states.put(key, new UserStore(defaultChatState));
         }
         final var userStore = states.get(key);
         if (!userStore.messageInProcess.tryLock()) {

@@ -1,9 +1,7 @@
 package org.tbplusc.app.telegram.interaction;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.tbplusc.app.message.processing.MessageSender;
 import org.tbplusc.app.message.processing.WrappedMessage;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -11,7 +9,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 public class WrappedTelegramMessage implements WrappedMessage {
     private final Message message;
     private final TelegramBoostioBot responder;
-    public WrappedTelegramMessage(Message message, TelegramBoostioBot responder){
+
+    public WrappedTelegramMessage(Message message, TelegramBoostioBot responder) {
         this.message = message;
         this.responder = responder;
     }
