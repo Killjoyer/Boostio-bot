@@ -67,7 +67,7 @@ public class DefaultChatStateTests {
         var results = new ArrayList<String>();
         defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!build test"));
 
-        Assert.assertTrue(results.get(0).contains("test"));
+        Assert.assertTrue(results.get(0).contains("TEST"));
         Assert.assertTrue(results.get(1).contains("main"));
         Assert.assertTrue(results.get(1).contains("CHECK"));
     }
@@ -87,14 +87,14 @@ public class DefaultChatStateTests {
         var newState = defaultChatState
                         .handleMessage(new TestDiscordMessage(firstResults::add, "!build test1"));
 
-        Assert.assertTrue(firstResults.get(0).contains("test2"));
-        Assert.assertTrue(firstResults.get(0).contains("test23"));
+        Assert.assertTrue(firstResults.get(0).contains("TEST2"));
+        Assert.assertTrue(firstResults.get(0).contains("TEST23"));
         Assert.assertEquals(newState.getClass(), HeroSelectionState.class);
 
         var secondResults = new ArrayList<String>();
         newState.handleMessage(new TestDiscordMessage(secondResults::add, "2"));
 
-        Assert.assertTrue(secondResults.get(0).contains("test23"));
+        Assert.assertTrue(secondResults.get(0).contains("TEST23"));
         Assert.assertTrue(secondResults.get(1).contains("CHECK"));
     }
 

@@ -76,7 +76,8 @@ public class HeroSelectionState implements ChatState {
                     logger.error("Failed to cache build for hero {}", normalizedHeroName);
                 }
             }
-            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
+            message.respond(String.format("Selected hero is **%s**",
+                            normalizedHeroName.toUpperCase()));
             builds.getBuilds().stream().map((build) -> {
                 final var talents = new StringBuilder();
                 for (var i = 0; i < build.getTalents().size(); i++) {
