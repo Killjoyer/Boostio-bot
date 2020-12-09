@@ -5,11 +5,9 @@ import org.tbplusc.app.message.processing.WrappedBotRespondMessage;
 
 public class WrappedDiscordBotRespondMessage implements WrappedBotRespondMessage {
     private final Message message;
-    private final WrappedDiscordMessage prevMessage;
 
-    public WrappedDiscordBotRespondMessage(WrappedDiscordMessage prevMessage, Message message) {
+    public WrappedDiscordBotRespondMessage(Message message) {
         this.message = message;
-        this.prevMessage = prevMessage;
     }
 
     @Override

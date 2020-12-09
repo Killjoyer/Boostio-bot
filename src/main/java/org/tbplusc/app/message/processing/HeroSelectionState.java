@@ -96,7 +96,7 @@ public class HeroSelectionState implements ChatState {
     @Override
     public ChatState handleMessage(WrappedMessage message) {
         var number = Integer.parseInt(message.getContent());
-        if (number < 1 || number >= 10) {
+        if (number < 1 || number > 10) {
             message.respond("Wrong number");
             return this;
         }
