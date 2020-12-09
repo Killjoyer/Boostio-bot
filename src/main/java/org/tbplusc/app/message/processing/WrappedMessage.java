@@ -9,5 +9,5 @@ public interface WrappedMessage {
   
     String getContent();
 
-    void respond(String text);
+    WrappedBotRespondMessage respond(String text);
 }

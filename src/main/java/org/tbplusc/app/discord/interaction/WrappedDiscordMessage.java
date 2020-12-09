@@ -38,9 +38,9 @@ public class WrappedDiscordMessage implements WrappedMessage {
     }
 
     @Override
-    public void respond(String text) {
+    public WrappedDiscordBotRespondMessage respond(String text) {
         var channel = getChannelForMessage(message);
-        channel.createMessage(text).block();
+        return new WrappedDiscordBotRespondMessage(this, channel.createMessage(text).block());
     }
 
     @Override

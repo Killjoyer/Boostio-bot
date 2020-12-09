@@ -3,6 +3,8 @@ package org.tbplusc.app.telegram.interaction;
 import org.tbplusc.app.message.processing.MessageSender;
 import org.tbplusc.app.message.processing.WrappedMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -36,12 +38,13 @@ public class WrappedTelegramMessage implements WrappedMessage {
     }
 
     @Override
-    public void respond(String text) {
+    public WrappedTelegramBotRespondMessage respond(String text) {
         var msgCommand = new SendMessage(this.getServerId(), text);
         try {
-            responder.execute(msgCommand);
+            return new WrappedTelegramBotRespondMessage(this, responder.execute(msgCommand), responder);
         } catch (TelegramApiException e) {
             responder.getLogger().error("Can't respond to message " + message.getText());
         }
+        return null;
     }
 }
