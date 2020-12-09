@@ -2,7 +2,6 @@ package org.tbplusc.app.message.processing;
 
 import java.io.IOException;
 import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.db.FailedReadException;
@@ -13,8 +12,6 @@ import org.tbplusc.app.talent.helper.HeroConsts;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
 import org.tbplusc.app.validator.WordDistancePair;
-
-import static org.apache.http.client.methods.RequestBuilder.delete;
 
 /**
  * ChatState to allow user to select hero from closest to his text.
@@ -38,7 +35,7 @@ public class HeroSelectionState implements ChatState {
      * @param talentProvider  object to get talents from somewhere
      */
     public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
-                              ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
+                    ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         this.availableHeroes = availableHeroes;
         this.message = message;
         this.talentProvider = talentProvider;
@@ -49,20 +46,22 @@ public class HeroSelectionState implements ChatState {
     private void showInitMessage() {
         final var heroes = new StringBuilder();
         for (var i = 0; i < availableHeroes.size(); i++) {
-            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).hero));
+            heroes.append(String.format("%3d. %s \n", i + 1,
+                            availableHeroes.get(i).alias.toUpperCase()));
         }
-        heroSelectionMessage = message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes), true);
+        heroSelectionMessage = message.respond(
+                        String.format("Choose hero (type number): \n ```md\n%s```", heroes), true);
     }
 
     /**
      * Format selected hero build for discord and send it as message response.
      *
      * @param message        message to respond
-     * @param heroName
+     * @param heroName       requested hero
      * @param talentProvider object to get talents from somewhere
      */
     public static void showHeroBuildInMarkdown(WrappedMessage message, String heroName,
-                                               ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
+                    ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
         logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
@@ -82,10 +81,10 @@ public class HeroSelectionState implements ChatState {
                 final var talents = new StringBuilder();
                 for (var i = 0; i < build.getTalents().size(); i++) {
                     talents.append(String.format("%3d. %s \n", HeroConsts.HERO_TALENTS_LEVELS[i],
-                            build.getTalents().get(i)));
+                                    build.getTalents().get(i)));
                 }
                 return String.format("**%s**: ```md\n%s```**Description:** %s", build.getName(),
-                        talents, build.getDescription());
+                                talents, build.getDescription());
             }).forEach(message::respond);
         } catch (IOException e) {
             logger.error("Hero was not loaded", e);
@@ -95,13 +94,21 @@ public class HeroSelectionState implements ChatState {
 
     @Override
     public ChatState handleMessage(WrappedMessage message) {
-        var number = Integer.parseInt(message.getContent());
+        int number;
+        try {
+            number = Integer.parseInt(message.getContent());
+        } catch (NumberFormatException e) {
+            message.respond("Wrong number");
+            return this;
+        }
         if (number < 1 || number > 10) {
             message.respond("Wrong number");
             return this;
         }
         final var heroName = availableHeroes.get(number - 1).hero;
-        if (heroSelectionMessage != null) heroSelectionMessage.delete();
+        if (heroSelectionMessage != null) {
+            heroSelectionMessage.delete();
+        }
         showHeroBuildInMarkdown(message, heroName, talentProvider, buildDBCacher);
         return null;
     }

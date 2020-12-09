@@ -1,10 +1,10 @@
 package org.tbplusc.app.validator;
 
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 
 public class Validator {
