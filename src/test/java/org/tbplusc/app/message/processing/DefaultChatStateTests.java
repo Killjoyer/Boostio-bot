@@ -1,11 +1,16 @@
 package org.tbplusc.app.message.processing;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
+import org.tbplusc.app.db.IBuildDBCacher;
 import org.tbplusc.app.db.IPrefixDBInteractor;
 import org.tbplusc.app.talent.helper.HeroBuild;
 import org.tbplusc.app.talent.helper.HeroBuilds;
@@ -14,17 +19,13 @@ import org.tbplusc.app.util.EnvWrapper;
 import org.tbplusc.app.validator.Validator;
 import org.tbplusc.app.validator.WordDistancePair;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 public class DefaultChatStateTests {
     private Validator validatorMock;
     private ITalentProvider talentHelperMock;
     private DefaultChatState defaultChatState;
     private IAliasesDBInteractor aliasesDBInteractorMock;
-    private IPrefixDBInteractor prefixDBInteractoMock;
+    private IPrefixDBInteractor prefixDBInteractorMock;
+    private IBuildDBCacher buildDBCacher;
     private HashMap<String, String> aliases;
 
     @Before
@@ -32,7 +33,8 @@ public class DefaultChatStateTests {
         validatorMock = Mockito.mock(Validator.class);
         talentHelperMock = Mockito.mock(ITalentProvider.class);
         aliasesDBInteractorMock = Mockito.mock(IAliasesDBInteractor.class);
-        prefixDBInteractoMock = Mockito.mock(IPrefixDBInteractor.class);
+        prefixDBInteractorMock = Mockito.mock(IPrefixDBInteractor.class);
+        buildDBCacher = Mockito.mock(IBuildDBCacher.class);
 
         aliases = new HashMap<>() {
             {
@@ -42,11 +44,11 @@ public class DefaultChatStateTests {
             }
         };
 
-        defaultChatState = new DefaultChatState(aliasesDBInteractorMock, prefixDBInteractoMock);
+        defaultChatState = new DefaultChatState(aliasesDBInteractorMock, prefixDBInteractorMock);
         DefaultChatState.registerDefaultCommands(defaultChatState, validatorMock, talentHelperMock,
-                        aliasesDBInteractorMock, prefixDBInteractoMock);
+                        aliasesDBInteractorMock, prefixDBInteractorMock, buildDBCacher);
 
-        Mockito.when(prefixDBInteractoMock.getPrefix("BB")).thenReturn("!");
+        Mockito.when(prefixDBInteractorMock.getPrefix("BB")).thenReturn("!");
         Mockito.when(aliasesDBInteractorMock.getAliases("BB")).thenReturn(aliases);
 
         EnvWrapper.registerValue("DISCORD_PREFIX", "!");
@@ -60,8 +62,7 @@ public class DefaultChatStateTests {
         Mockito.when(talentHelperMock.getBuilds("test"))
                         .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("main", "main",
                                         List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
-
-        Mockito.when(aliasesDBInteractorMock.getHeroByAlias("BB", "test")).thenReturn("test");
+        Mockito.when(buildDBCacher.getBuilds("test")).thenThrow(new FailedReadException());
 
         var results = new ArrayList<String>();
         defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!build test"));
@@ -80,8 +81,7 @@ public class DefaultChatStateTests {
         Mockito.when(talentHelperMock.getBuilds("test23"))
                         .thenReturn(new HeroBuilds("test23", List.of(new HeroBuild("main", "main",
                                         List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
-
-        Mockito.when(aliasesDBInteractorMock.getHeroByAlias("BB", "test23")).thenReturn("test23");
+        Mockito.when(buildDBCacher.getBuilds("test23")).thenThrow(new FailedReadException());
 
         var firstResults = new ArrayList<String>();
         var newState = defaultChatState
@@ -96,6 +96,25 @@ public class DefaultChatStateTests {
 
         Assert.assertTrue(secondResults.get(0).contains("test23"));
         Assert.assertTrue(secondResults.get(1).contains("CHECK"));
+    }
+
+    @Test
+    public void testCacheUsage() throws IOException, FailedReadException {
+        Mockito.when(validatorMock.getSomeClosestToInput("test", 10, aliases))
+                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "test", 0),
+                            new WordDistancePair("test1", "test1", 1),});
+        Mockito.when(talentHelperMock.getBuilds("test"))
+                        .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("notcached",
+                                        "main", List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
+        Mockito.when(buildDBCacher.getBuilds("test"))
+                        .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("cached", "main",
+                                        List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
+
+        var results = new ArrayList<String>();
+        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!build test"));
+
+        Assert.assertFalse(results.get(1).contains("notcached"));
+        Assert.assertTrue(results.get(1).contains("cached"));
     }
 
     @Test
