@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.tbplusc.app.db.FailedReadException;
+import org.tbplusc.app.db.FailedWriteException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
 import org.tbplusc.app.db.IBuildDBCacher;
 import org.tbplusc.app.db.IPrefixDBInteractor;
@@ -115,6 +116,23 @@ public class DefaultChatStateTests {
 
         Assert.assertFalse(results.get(1).contains("notcached"));
         Assert.assertTrue(results.get(1).contains("cached"));
+    }
+
+    @Test
+    public void testPrefixOperations() throws FailedReadException, FailedWriteException {
+        Mockito.when(prefixDBInteractorMock.getPrefix("BB")).thenReturn("!");
+        var results = new ArrayList<String>();
+
+        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!echo kek"));
+        Assert.assertEquals(results.get(0), "kek");
+        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!prefix ^"));
+        Mockito.when(prefixDBInteractorMock.getPrefix("BB")).thenReturn("^");
+
+        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!echo test"));
+        Assert.assertTrue(results.size() == 1);
+
+        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "^echo test"));
+        Assert.assertEquals(results.get(1), "test");
     }
 
     @Test
