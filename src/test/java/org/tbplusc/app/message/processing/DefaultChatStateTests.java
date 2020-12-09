@@ -105,17 +105,28 @@ public class DefaultChatStateTests {
                         .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "test", 0),
                             new WordDistancePair("test1", "test1", 1),});
         Mockito.when(talentHelperMock.getBuilds("test"))
-                        .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("notcached",
-                                        "main", List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
+                        .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("puredata", "main",
+                                        List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
         Mockito.when(buildDBCacher.getBuilds("test"))
                         .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("cached", "main",
                                         List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
 
-        var results = new ArrayList<String>();
-        defaultChatState.handleMessage(new TestDiscordMessage(results::add, "!build test"));
+        var resultsWhenCached = new ArrayList<String>();
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWhenCached::add, "!build test"));
 
-        Assert.assertFalse(results.get(1).contains("notcached"));
-        Assert.assertTrue(results.get(1).contains("cached"));
+        Assert.assertFalse(resultsWhenCached.get(1).contains("puredata"));
+        Assert.assertTrue(resultsWhenCached.get(1).contains("cached"));
+
+        var resultsWhenCacheIsCleared = new ArrayList<String>();
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWhenCacheIsCleared::add, "!clear-cache"));
+        Assert.assertEquals(resultsWhenCacheIsCleared.get(0), "Cache was successfully cleared");
+        Mockito.when(buildDBCacher.getBuilds("test")).thenThrow(new FailedReadException());
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWhenCacheIsCleared::add, "!build test"));
+        Assert.assertFalse(resultsWhenCacheIsCleared.get(2).contains("cached"));
+        Assert.assertTrue(resultsWhenCacheIsCleared.get(2).contains("puredata"));
     }
 
     @Test
@@ -133,6 +144,47 @@ public class DefaultChatStateTests {
 
         defaultChatState.handleMessage(new TestDiscordMessage(results::add, "^echo test"));
         Assert.assertEquals(results.get(1), "test");
+    }
+
+    @Test
+    public void testAliasOperations()
+                    throws IOException, FailedReadException, FailedWriteException {
+        Mockito.when(validatorMock.getSomeClosestToInput("tes", 10, aliases))
+                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "test", 1),
+                            new WordDistancePair("test1", "test1", 2),});
+        Mockito.when(talentHelperMock.getBuilds("test"))
+                        .thenReturn(new HeroBuilds("test", List.of(new HeroBuild("notcached",
+                                        "main", List.of("a", "b", "c", "d", "CHECK", "f", "g")))));
+        Mockito.when(buildDBCacher.getBuilds("test")).thenThrow(new FailedReadException());
+
+        var resultsWithoutAlias = new ArrayList<String>();
+        var stateWithoutAlias = defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWithoutAlias::add, "!build tes"));
+        stateWithoutAlias.handleMessage(new TestDiscordMessage(resultsWithoutAlias::add, "1"));
+        Assert.assertTrue(resultsWithoutAlias.get(2).contains("CHECK"));
+
+        var resultsWithNewAlias = new ArrayList<String>();
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWithNewAlias::add, "!alias tes test"));
+        aliases.put("tes", "test");
+        Mockito.when(validatorMock.getSomeClosestToInput("tes", 10, aliases))
+                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "tes", 0),
+                            new WordDistancePair("test", "test", 1),
+                            new WordDistancePair("test1", "test1", 2),});
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWithNewAlias::add, "!build tes"));
+        Assert.assertTrue(resultsWithNewAlias.get(1).contains("CHECK"));
+
+        defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWithoutAlias::add, "!rmv-alias tes"));
+        aliases.remove("tes");
+        Mockito.when(validatorMock.getSomeClosestToInput("tes", 10, aliases))
+                        .thenReturn(new WordDistancePair[] {new WordDistancePair("test", "test", 1),
+                            new WordDistancePair("test1", "test1", 2),});
+        stateWithoutAlias = defaultChatState.handleMessage(
+                        new TestDiscordMessage(resultsWithoutAlias::add, "!build tes"));
+        stateWithoutAlias.handleMessage(new TestDiscordMessage(resultsWithoutAlias::add, "1"));
+        Assert.assertTrue(resultsWithoutAlias.get(5).contains("CHECK"));
     }
 
     @Test
