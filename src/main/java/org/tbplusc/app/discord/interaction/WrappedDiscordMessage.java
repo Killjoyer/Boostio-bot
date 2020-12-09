@@ -1,6 +1,7 @@
 package org.tbplusc.app.discord.interaction;
 
 import discord4j.core.object.entity.Message;
+import org.jvnet.hk2.annotations.Optional;
 import org.tbplusc.app.message.processing.MessageSender;
 import org.tbplusc.app.message.processing.WrappedMessage;
 import static org.tbplusc.app.discord.interaction.DiscordUtil.getChannelForMessage;
@@ -38,9 +39,14 @@ public class WrappedDiscordMessage implements WrappedMessage {
     }
 
     @Override
-    public WrappedDiscordBotRespondMessage respond(String text) {
+    public WrappedDiscordBotRespondMessage respond(String text, boolean keyboarded) {
         var channel = getChannelForMessage(message);
         return new WrappedDiscordBotRespondMessage(this, channel.createMessage(text).block());
+    }
+
+    @Override
+    public WrappedDiscordBotRespondMessage respond(String text) {
+        return respond(text, false);
     }
 
     @Override

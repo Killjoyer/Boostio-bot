@@ -7,18 +7,16 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class WrappedTelegramBotRespondMessage implements WrappedBotRespondMessage {
     private final Message message;
-    private final WrappedTelegramMessage prevMessage;
     private final TelegramBoostioBot responder;
 
-    public WrappedTelegramBotRespondMessage(WrappedTelegramMessage prevMessage, Message message, TelegramBoostioBot responder) {
+    public WrappedTelegramBotRespondMessage(Message message, TelegramBoostioBot responder) {
         this.message = message;
         this.responder = responder;
-        this.prevMessage = prevMessage;
     }
 
     @Override
     public void delete() {
-        var msgCommand = new DeleteMessage(prevMessage.getServerId(), message.getMessageId());
+        var msgCommand = new DeleteMessage(Long.toString(message.getChatId()), message.getMessageId());
         try {
             responder.execute(msgCommand);
         } catch (TelegramApiException e) {

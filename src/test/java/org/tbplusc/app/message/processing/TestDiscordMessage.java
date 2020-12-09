@@ -29,7 +29,7 @@ public class TestDiscordMessage implements WrappedMessage {
     }
 
     @Override
-    public WrappedBotRespondMessage respond(String text) {
+    public WrappedBotRespondMessage respond(String text, boolean keyboarded) {
         callback.accept(text);
         return Mockito.mock(WrappedBotRespondMessage.class);
     }

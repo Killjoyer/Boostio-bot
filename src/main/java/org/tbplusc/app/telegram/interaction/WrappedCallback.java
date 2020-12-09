@@ -4,15 +4,17 @@ import org.jvnet.hk2.annotations.Optional;
 import org.tbplusc.app.message.processing.MessageSender;
 import org.tbplusc.app.message.processing.WrappedMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-public class WrappedTelegramMessage implements WrappedMessage {
-    private final Message message;
+import javax.validation.constraints.NotNull;
+
+public class WrappedCallback implements WrappedMessage {
+    private final CallbackQuery callback;
     private final TelegramBoostioBot responder;
 
-    public WrappedTelegramMessage(Message message, TelegramBoostioBot responder) {
-        this.message = message;
+    public WrappedCallback(CallbackQuery callback, TelegramBoostioBot responder) {
+        this.callback = callback;
         this.responder = responder;
     }
 
@@ -23,17 +25,17 @@ public class WrappedTelegramMessage implements WrappedMessage {
 
     @Override
     public String getConversationId() {
-        return message.getFrom().getUserName() + this.getServerId();
+        return callback.getFrom().getUserName() + this.getServerId();
     }
 
     @Override
     public String getServerId() {
-        return Long.toString(message.getChatId());
+        return Long.toString(callback.getMessage().getChatId());
     }
 
     @Override
     public String getContent() {
-        return message.getText();
+        return callback.getData();
     }
 
     @Override
@@ -44,7 +46,7 @@ public class WrappedTelegramMessage implements WrappedMessage {
             if (keyboarded) msgCommand.setReplyMarkup(new NumbersKeyboard());
             return new WrappedTelegramBotRespondMessage(responder.execute(msgCommand), responder);
         } catch (TelegramApiException e) {
-            responder.getLogger().error("Can't respond to message " + message.getText(), e);
+            responder.getLogger().error("Can't respond to message " + this.getContent(), e);
         }
         return null;
     }

@@ -51,7 +51,7 @@ public class HeroSelectionState implements ChatState {
         for (var i = 0; i < availableHeroes.size(); i++) {
             heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).hero));
         }
-        heroSelectionMessage = message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
+        heroSelectionMessage = message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes), true);
     }
 
     /**
@@ -61,8 +61,8 @@ public class HeroSelectionState implements ChatState {
      * @param heroName
      * @param talentProvider object to get talents from somewhere
      */
-    public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
-                                              ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
+    public static void showHeroBuildInMarkdown(WrappedMessage message, String heroName,
+                                               ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
         logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
@@ -102,7 +102,7 @@ public class HeroSelectionState implements ChatState {
         }
         final var heroName = availableHeroes.get(number - 1).hero;
         if (heroSelectionMessage != null) heroSelectionMessage.delete();
-        showHeroBuildToDiscord(message, heroName, talentProvider, buildDBCacher);
+        showHeroBuildInMarkdown(message, heroName, talentProvider, buildDBCacher);
         return null;
     }
 }
