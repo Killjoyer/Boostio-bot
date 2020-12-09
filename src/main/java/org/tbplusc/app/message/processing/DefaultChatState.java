@@ -1,19 +1,18 @@
 package org.tbplusc.app.message.processing;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.db.FailedReadException;
 import org.tbplusc.app.db.FailedWriteException;
 import org.tbplusc.app.db.IAliasesDBInteractor;
+import org.tbplusc.app.db.IBuildDBCacher;
 import org.tbplusc.app.db.IPrefixDBInteractor;
-import org.tbplusc.app.discord.interaction.WrappedDiscordMessage;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.validator.Validator;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.BiFunction;
 
 
 /**
@@ -51,7 +50,7 @@ public class DefaultChatState implements ChatState {
     public static void registerDefaultCommands(DefaultChatState defaultChatState,
                     Validator validator, ITalentProvider talentProvider,
                     IAliasesDBInteractor aliasesDBInteractor,
-                    IPrefixDBInteractor prefixDBInteractor) {
+                    IPrefixDBInteractor prefixDBInteractor, IBuildDBCacher buildDBCacher) {
         registerCommand("echo", (args, message) -> {
             message.respond(args.equals("") ? "Не могу заэхоть пустую строку" : args);
             return defaultChatState;
@@ -67,11 +66,11 @@ public class DefaultChatState implements ChatState {
                 final var possibleHeroNames = validator.getSomeClosestToInput(args, 10, aliases);
                 if (possibleHeroNames[0].distance == 0) {
                     HeroSelectionState.showHeroBuildToDiscord(message, possibleHeroNames[0].hero,
-                                    talentProvider);
+                                    talentProvider, buildDBCacher);
                     return defaultChatState;
                 }
                 return new HeroSelectionState(Arrays.asList(possibleHeroNames.clone()), message,
-                                talentProvider, aliasesDBInteractor);
+                                talentProvider, buildDBCacher);
             } catch (FailedReadException e) {
                 message.respond("Unable to get hero from DB");
                 return defaultChatState;
@@ -109,6 +108,15 @@ public class DefaultChatState implements ChatState {
                 aliasesDBInteractor.removeAlias(serverId, args);
             } catch (FailedWriteException e) {
                 message.respond("Unable to delete alias from DB");
+            }
+            return defaultChatState;
+        });
+        registerCommand("clear-cache", (args, message) -> {
+            try {
+                buildDBCacher.clearCache();
+                message.respond("Cache was successfully cleared");
+            } catch (FailedWriteException e) {
+                message.respond("Unable to clear DB cache");
             }
             return defaultChatState;
         });

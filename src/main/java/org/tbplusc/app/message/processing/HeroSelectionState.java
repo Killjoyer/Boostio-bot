@@ -1,16 +1,17 @@
 package org.tbplusc.app.message.processing;
 
+import java.io.IOException;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tbplusc.app.db.FailedReadException;
-import org.tbplusc.app.db.IAliasesDBInteractor;
+import org.tbplusc.app.db.FailedWriteException;
+import org.tbplusc.app.db.IBuildDBCacher;
+import org.tbplusc.app.talent.helper.HeroBuilds;
 import org.tbplusc.app.talent.helper.HeroConsts;
 import org.tbplusc.app.talent.helper.parsers.ITalentProvider;
 import org.tbplusc.app.talent.helper.parsers.IcyVeinsTalentProvider;
 import org.tbplusc.app.validator.WordDistancePair;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * ChatState to allow user to select hero from closest to his text.
@@ -23,7 +24,7 @@ public class HeroSelectionState implements ChatState {
     private final WrappedMessage message;
     private final ITalentProvider talentProvider;
 
-    private final IAliasesDBInteractor aliasesDBInteractor;
+    private final IBuildDBCacher buildDBCacher;
 
     /**
      * ChatState to allow user to select hero from closest to his text.
@@ -33,11 +34,11 @@ public class HeroSelectionState implements ChatState {
      * @param talentProvider  object to get talents from somewhere
      */
     public HeroSelectionState(List<WordDistancePair> availableHeroes, WrappedMessage message,
-                    ITalentProvider talentProvider, IAliasesDBInteractor aliasesDBInteractor) {
+                    ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         this.availableHeroes = availableHeroes;
         this.message = message;
         this.talentProvider = talentProvider;
-        this.aliasesDBInteractor = aliasesDBInteractor;
+        this.buildDBCacher = buildDBCacher;
         showInitMessage();
     }
 
@@ -57,11 +58,21 @@ public class HeroSelectionState implements ChatState {
      * @param talentProvider object to get talents from somewhere
      */
     public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
-                    ITalentProvider talentProvider) {
+                    ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
         logger.info("Normalized hero name: {}", normalizedHeroName);
         try {
-            final var builds = talentProvider.getBuilds(normalizedHeroName);
+            HeroBuilds builds;
+            try {
+                builds = buildDBCacher.getBuilds(normalizedHeroName);
+            } catch (FailedReadException e) {
+                builds = talentProvider.getBuilds(normalizedHeroName);
+                try {
+                    buildDBCacher.cacheBuilds(normalizedHeroName, builds);
+                } catch (FailedWriteException ex) {
+                    logger.error("Failed to cache build for hero {}", normalizedHeroName);
+                }
+            }
             message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
             builds.getBuilds().stream().map((build) -> {
                 final var talents = new StringBuilder();
@@ -86,7 +97,7 @@ public class HeroSelectionState implements ChatState {
             return this;
         }
         final var heroName = availableHeroes.get(number - 1).hero;
-        showHeroBuildToDiscord(message, heroName, talentProvider);
+        showHeroBuildToDiscord(message, heroName, talentProvider, buildDBCacher);
         return null;
     }
 }
