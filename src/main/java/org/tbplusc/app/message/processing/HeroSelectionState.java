@@ -22,13 +22,14 @@ public class HeroSelectionState implements ChatState {
     private final List<WordDistancePair> availableHeroes;
 
     private final WrappedMessage message;
+    private WrappedBotRespondMessage heroSelectionMessage;
     private final ITalentProvider talentProvider;
 
     private final IBuildDBCacher buildDBCacher;
 
     /**
      * ChatState to allow user to select hero from closest to his text.
-     * 
+     *
      * @param availableHeroes heroes list provided by Validator
      * @param message         message with command from user
      * @param talentProvider  object to get talents from somewhere
@@ -45,19 +46,21 @@ public class HeroSelectionState implements ChatState {
     private void showInitMessage() {
         final var heroes = new StringBuilder();
         for (var i = 0; i < availableHeroes.size(); i++) {
-            heroes.append(String.format("%3d. %s \n", i + 1, availableHeroes.get(i).hero));
+            heroes.append(String.format("%3d. %s \n", i + 1,
+                            availableHeroes.get(i).alias.toUpperCase()));
         }
-        message.respond(String.format("Choose hero (type number): \n ```md\n%s```", heroes));
+        heroSelectionMessage = message.respond(
+                        String.format("Choose hero (type number): \n ```md\n%s```", heroes), true);
     }
 
     /**
      * Format selected hero build for discord and send it as message response.
-     * 
+     *
      * @param message        message to respond
-     * @param heroName
+     * @param heroName       requested hero
      * @param talentProvider object to get talents from somewhere
      */
-    public static void showHeroBuildToDiscord(WrappedMessage message, String heroName,
+    public static void showHeroBuildInMarkdown(WrappedMessage message, String heroName,
                     ITalentProvider talentProvider, IBuildDBCacher buildDBCacher) {
         final var normalizedHeroName = IcyVeinsTalentProvider.normalizeHeroName(heroName);
         logger.info("Normalized hero name: {}", normalizedHeroName);
@@ -73,7 +76,8 @@ public class HeroSelectionState implements ChatState {
                     logger.error("Failed to cache build for hero {}", normalizedHeroName);
                 }
             }
-            message.respond(String.format("Selected hero is **%s**", normalizedHeroName));
+            message.respond(String.format("Selected hero is **%s**",
+                            normalizedHeroName.toUpperCase()));
             builds.getBuilds().stream().map((build) -> {
                 final var talents = new StringBuilder();
                 for (var i = 0; i < build.getTalents().size(); i++) {
@@ -91,13 +95,22 @@ public class HeroSelectionState implements ChatState {
 
     @Override
     public ChatState handleMessage(WrappedMessage message) {
-        var number = Integer.parseInt(message.getContent());
-        if (number < 1 || number >= 10) {
+        int number;
+        try {
+            number = Integer.parseInt(message.getContent());
+        } catch (NumberFormatException e) {
+            message.respond("Wrong number");
+            return this;
+        }
+        if (number < 1 || number > 10) {
             message.respond("Wrong number");
             return this;
         }
         final var heroName = availableHeroes.get(number - 1).hero;
-        showHeroBuildToDiscord(message, heroName, talentProvider, buildDBCacher);
+        if (heroSelectionMessage != null) {
+            heroSelectionMessage.delete();
+        }
+        showHeroBuildInMarkdown(message, heroName, talentProvider, buildDBCacher);
         return null;
     }
 }

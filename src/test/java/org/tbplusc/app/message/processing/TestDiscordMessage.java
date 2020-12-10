@@ -1,7 +1,7 @@
 package org.tbplusc.app.message.processing;
 
 import java.util.function.Consumer;
-import org.apache.commons.lang3.NotImplementedException;
+import org.mockito.Mockito;
 
 public class TestDiscordMessage implements WrappedMessage {
 
@@ -29,8 +29,9 @@ public class TestDiscordMessage implements WrappedMessage {
     }
 
     @Override
-    public void respond(String text) {
+    public WrappedBotRespondMessage respond(String text, boolean keyboarded) {
         callback.accept(text);
+        return Mockito.mock(WrappedBotRespondMessage.class);
     }
 
     @Override

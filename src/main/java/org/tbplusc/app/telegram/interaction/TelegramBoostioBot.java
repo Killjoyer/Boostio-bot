@@ -35,5 +35,8 @@ public class TelegramBoostioBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             messageHandler.handleMessage(new WrappedTelegramMessage(update.getMessage(), this));
         }
+        if (update.hasCallbackQuery()) {
+            messageHandler.handleMessage(new WrappedCallback(update.getCallbackQuery(), this));
+        }
     }
 }
