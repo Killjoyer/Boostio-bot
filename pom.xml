@@ -4,7 +4,7 @@
 
     <groupId>org.tbplusc</groupId>
     <artifactId>boostio-bot</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 
     <build>
         <plugins>
@@ -158,6 +158,20 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.30</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.telegram/telegrambots -->
+        <dependency>
+            <groupId>org.telegram</groupId>
+            <artifactId>telegrambots</artifactId>
+            <version>5.0.1</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>4.1.1</version>
         </dependency>
     </dependencies>
 </project>

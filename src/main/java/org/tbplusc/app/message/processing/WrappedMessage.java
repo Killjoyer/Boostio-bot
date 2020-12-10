@@ -1,9 +1,19 @@
 package org.tbplusc.app.message.processing;
 
+import org.jvnet.hk2.annotations.Optional;
+
 public interface WrappedMessage {
-    String getContextKey();
+    MessageSender getSenderApp();
+
+    String getConversationId();
+
+    String getServerId();
 
     String getContent();
 
-    void respond(String text);
+    WrappedBotRespondMessage respond(String text, boolean keyboarded);
+
+    default WrappedBotRespondMessage respond(String text) {
+        return respond(text, false);
+    }
 }
